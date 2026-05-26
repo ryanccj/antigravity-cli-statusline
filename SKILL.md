@@ -374,7 +374,7 @@ main();
 
 #### 📂 建立/覆蓋 Hook 主腳本：`~/.gemini/hooks/statusline-quota.mjs`
 ```javascript
-import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { spawn, execSync } from 'child_process';
 import { join } from 'path';
 import os from 'os';
@@ -551,14 +551,45 @@ async function main() {
     const quotaVal = `${Math.round(quotaPct)}%`;
     
     const contextWindow = meta.context_window || {};
-    const usedPctNum = contextWindow.used_percentage || 0;
+    const conversationId = meta.conversation_id || 'default';
+    const ctxCachePath = join(os.homedir(), '.gemini', 'tmp', `ctx_${conversationId}.json`);
+    
+    let totalInput = contextWindow.total_input_tokens || 0;
+    let totalOutput = contextWindow.total_output_tokens || 0;
+    let usedPctNum = contextWindow.used_percentage || 0;
+    const contextSize = contextWindow.context_window_size || 1048576;
+    
+    if (totalInput === 0 && totalOutput === 0) {
+      try {
+        if (existsSync(ctxCachePath)) {
+          const cachedCtx = JSON.parse(readFileSync(ctxCachePath, 'utf8'));
+          totalInput = cachedCtx.total_input_tokens || 0;
+          totalOutput = cachedCtx.total_output_tokens || 0;
+          if (cachedCtx.used_percentage) usedPctNum = cachedCtx.used_percentage;
+        }
+      } catch (e) {}
+    } else {
+      try {
+        mkdirSync(join(os.homedir(), '.gemini', 'tmp'), { recursive: true });
+        writeFileSync(ctxCachePath, JSON.stringify({
+          total_input_tokens: totalInput,
+          total_output_tokens: totalOutput,
+          used_percentage: usedPctNum
+        }), { encoding: 'utf8' });
+      } catch (e) {}
+    }
+    
+    if (contextSize > 0 && (totalInput + totalOutput) > 0) {
+      usedPctNum = ((totalInput + totalOutput) / contextSize) * 100;
+    }
+    
     const remainCtx = Math.max(0, 100 - usedPctNum);
     const contextColor = getColorByPercentage(remainCtx);
     const usedPct = `${usedPctNum.toFixed(1)}%`;
     
     const rssMem = Math.round((process.memoryUsage().rss || 148857600) / 1024 / 1024);
     const memUsage = `${rssMem}MB`;
-    const totalTokens = (contextWindow.total_input_tokens || 0) + (contextWindow.total_output_tokens || 0);
+    const totalTokens = totalInput + totalOutput;
     const tokenCount = formatTokens(totalTokens);
     const countdownVal = modelQuota.refreshes_in || (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A'));
     const gitBranch = getGitBranch(lang);
