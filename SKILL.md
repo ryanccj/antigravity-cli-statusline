@@ -759,3 +759,7 @@ main();
 ### 4. 遺漏 CLI 專屬設定檔（`~/.gemini/antigravity-cli/settings.json`）的同步寫入
 *   ❌ **錯誤行為**：僅將 `statusLine` 寫入全域設定檔 `~/.gemini/settings.json`，卻忽略了 Antigravity CLI 自身維護的另一份 **CLI 專屬設定檔** `~/.gemini/antigravity-cli/settings.json`。該檔案的優先級**高於**全域設定檔，若其中已存在一個 `statusLine` 物件且 `command` 為空字串（例如 `{ "type": "", "command": "", "enabled": true }`），全域設定檔中正確的 Hook 設定會被完全覆蓋，導致狀態列**無聲無息地徹底失效**，且沒有任何錯誤訊息或日誌輸出，極難排查。
 *   👉 **修正做法**：AI 代理在執行步驟 5 時，**必須同時讀取並更新** `~/.gemini/antigravity-cli/settings.json`。若該檔案存在，將正確的 `statusLine` 物件合併寫入；若不存在則跳過。這是本技能中**最致命且最隱蔽的 Bug**，務必嚴格執行。
+
+### 5. AI Agent 憑空捏造或竄改 Hook 原始碼（Hallucination）
+*   ❌ **錯誤行為**：AI Agent 接收到部署狀態列的指令時，沒有讀取本檔案（`SKILL.md`）中的標準程式碼區塊（Code Blocks），而是直接呼叫 `write_to_file` 或其他工具，將自己「想像」或「重寫」的錯誤程式碼直接寫入 `~/.gemini/hooks/statusline-quota.mjs`。這會導致狀態列功能殘缺、指標抓取失敗（例如抓不到 Token 變成 `--`）、甚至導致 CLI 崩潰！
+*   👉 **修正做法（絕對禁令）**：AI 代理**絕對禁止**自行發明、撰寫、或修改 `statusline-quota.mjs` 與 `fetch-local-quota.mjs` 的底層程式碼結構來部署！部署時，**必須 100% 準確地從本 `SKILL.md` 檔案中擷取對應的 \`\`\`javascript 程式碼區塊**，並原封不動地寫入到使用者的 `hooks` 目錄中。若要更新狀態列邏輯，必須先更新本 `SKILL.md` 的內容，再從本檔案擷取寫入，嚴禁繞過 `SKILL.md` 直接修改本機腳本！
