@@ -616,8 +616,8 @@ async function main() {
       } catch (e) {}
     }
     
-    if (contextSize > 0 && (totalInput + totalOutput) > 0) {
-      usedPctNum = ((totalInput + totalOutput) / contextSize) * 100;
+    if (contextSize > 0 && totalInput > 0 && !usedPctNum) {
+      usedPctNum = (totalInput / contextSize) * 100;
     }
     
     const remainCtx = Math.max(0, 100 - usedPctNum);
@@ -626,7 +626,7 @@ async function main() {
     
     const rssMem = getCliMemoryMB();
     const memUsage = `${rssMem}MB`;
-    const totalTokens = totalInput + totalOutput;
+    const totalTokens = totalInput;
     const tokenCount = `${formatTokens(totalTokens)} / ${formatTokens(contextSize)}`;
     const countdownVal = modelQuota.refreshes_in || (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A'));
     const gitBranch = getGitBranch(lang);
