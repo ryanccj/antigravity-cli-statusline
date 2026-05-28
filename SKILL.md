@@ -411,6 +411,15 @@ function getColorByPercentage(pct) {
   return RED;
 }
 
+// 根據模型家族取得色彩 (Claude: #dd5013, Gemini: #4796e3, GPT: #74aa9c)
+function getModelColor(name) {
+  const lower = (name || '').toLowerCase();
+  if (lower.includes('claude')) return "\x1b[38;2;221;80;19m";
+  if (lower.includes('gemini')) return "\x1b[38;2;71;150;227m";
+  if (lower.includes('gpt') || lower.includes('chatgpt')) return "\x1b[38;2;116;170;156m";
+  return "";
+}
+
 // 清理 ANSI 碼以計算純文字長度
 function stripAnsi(str) {
   return str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
@@ -611,7 +620,7 @@ async function main() {
 
     const i18n = {
       'zh-tw': {
-        'model-name': `模型: ${BOLD}${fallbackModel}${RESET}`,
+        'model-name': `模型: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
         'quota': `API 額度: ${quotaColor}${quotaVal}${RESET}`,
         'context-used': `Context: ${contextColor}${usedPct}${RESET}`,
         'memory-usage': `記憶體: ${memUsage}`,
@@ -622,7 +631,7 @@ async function main() {
         'project-full-path': `專案路徑: ${BOLD}${projectFullPath}${RESET}`
       },
       'us': {
-        'model-name': `Model: ${BOLD}${fallbackModel}${RESET}`,
+        'model-name': `Model: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
         'quota': `Quota: ${quotaColor}${quotaVal}${RESET}`,
         'context-used': `Context: ${contextColor}${usedPct}${RESET}`,
         'memory-usage': `RAM: ${memUsage}`,
@@ -633,7 +642,7 @@ async function main() {
         'project-full-path': `Project Path: ${BOLD}${projectFullPath}${RESET}`
       },
       'jp': {
-        'model-name': `モデル: ${BOLD}${fallbackModel}${RESET}`,
+        'model-name': `モデル: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
         'quota': `API 残高: ${quotaColor}${quotaVal}${RESET}`,
         'context-used': `コンテキスト: ${contextColor}${usedPct}${RESET}`,
         'memory-usage': `メモリ: ${memUsage}`,
