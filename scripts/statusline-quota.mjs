@@ -49,9 +49,12 @@ function stripAnsi(str) {
 function getCliMemoryMB() {
   try {
     if (process.platform === 'win32') {
-      const output = execSync(`wmic process where processid=${process.ppid} get WorkingSetSize`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
-      const match = output.match(/\d+/);
-      if (match) return Math.round(parseInt(match[0], 10) / 1024 / 1024);
+      const output = execSync(`wmic process where "name='agy.exe'" get WorkingSetSize`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+      const matches = output.match(/\d+/g);
+      if (matches) {
+        const totalBytes = matches.reduce((sum, val) => sum + parseInt(val, 10), 0);
+        return Math.round(totalBytes / 1024 / 1024);
+      }
     } else {
       const output = execSync(`ps -o rss= -p ${process.ppid}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
       const memKb = parseInt(output.trim(), 10);
