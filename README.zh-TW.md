@@ -14,7 +14,10 @@
 ![Windows 狀態列截圖](path/to/your/windows_screenshot.png) <!-- TODO: 請在此替換為你的 Windows 截圖路徑 -->
 
 ### macOS
-![macOS 狀態列截圖](path/to/your/macos_screenshot.png) <!-- TODO: 請在此替換為你的 macOS 截圖路徑 -->
+
+| 繁體中文 (zh-tw) | English (us) | 日本語 (jp) |
+| :---: | :---: | :---: |
+| ![繁體中文](docs/images/agy-cli-statusline-macos-zhtw.png) | ![English](docs/images/agy-cli-statusline-macos-us.png) | ![日本語](docs/images/agy-cli-statusline-macos-jp.png) |
 
 ## 功能特色
 

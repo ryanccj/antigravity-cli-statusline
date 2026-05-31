@@ -14,7 +14,10 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 ![Windows Statusline Screenshot](path/to/your/windows_screenshot.png) <!-- TODO: Upload your Windows image and replace this path -->
 
 ### macOS
-![macOS Statusline Screenshot](path/to/your/macos_screenshot.png) <!-- TODO: Upload your macOS image and replace this path -->
+
+| English (us) | Traditional Chinese (zh-tw) | Japanese (jp) |
+| :---: | :---: | :---: |
+| ![English](docs/images/agy-cli-statusline-macos-us.png) | ![Traditional Chinese](docs/images/agy-cli-statusline-macos-zhtw.png) | ![Japanese](docs/images/agy-cli-statusline-macos-jp.png) |
 
 ## Features
 
