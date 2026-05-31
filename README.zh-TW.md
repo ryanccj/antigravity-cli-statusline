@@ -11,7 +11,10 @@
 ## 實際畫面 (Screenshot)
 
 ### Windows
-![Windows 狀態列截圖](path/to/your/windows_screenshot.png) <!-- TODO: 請在此替換為你的 Windows 截圖路徑 -->
+
+| 繁體中文 (zh-tw) | English (us) | 日本語 (jp) |
+| :---: | :---: | :---: |
+| ![繁體中文](docs/images/antigravity-cli-statusline-windows-zhtw.png) | ![English](docs/images/antigravity-cli-statusline-windows-us.png) | ![日本語](docs/images/antigravity-cli-statusline-windows-jp.png) |
 
 ### macOS
 

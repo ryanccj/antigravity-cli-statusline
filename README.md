@@ -11,7 +11,10 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 ## Screenshot
 
 ### Windows
-![Windows Statusline Screenshot](path/to/your/windows_screenshot.png) <!-- TODO: Upload your Windows image and replace this path -->
+
+| English (us) | Traditional Chinese (zh-tw) | Japanese (jp) |
+| :---: | :---: | :---: |
+| ![English](docs/images/antigravity-cli-statusline-windows-us.png) | ![Traditional Chinese](docs/images/antigravity-cli-statusline-windows-zhtw.png) | ![Japanese](docs/images/antigravity-cli-statusline-windows-jp.png) |
 
 ### macOS
 
