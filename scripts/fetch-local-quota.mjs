@@ -173,7 +173,8 @@ async function fetchLiveQuotaCache() {
           }
           
           const label = model.label || (model.modelOrAlias && model.modelOrAlias.model) || 'Unknown';
-          const remaining = Math.max(0, Math.min(100, fraction * 100));
+          const remainingNum = fraction > 1 ? fraction : fraction * 100;
+          const remaining = Math.max(0, Math.min(100, remainingNum));
           const entry = {
             name: label,
             remaining_percentage: remaining,
