@@ -7,7 +7,8 @@ function getGitBranch(lang) {
   try {
     const branch = execSync('git rev-parse --abbrev-ref HEAD', {
       encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore']
+      stdio: ['ignore', 'pipe', 'ignore'],
+      windowsHide: true
     }).trim();
     return branch || (lang === 'zh-tw' ? '無版本控制' : (lang === 'jp' ? 'バージョン管理なし' : 'No VC'));
   } catch (e) {
@@ -48,11 +49,11 @@ function stripAnsi(str) {
 function getCliMemoryMB() {
   try {
     if (process.platform === 'win32') {
-      const output = execSync(`wmic process where processid=${process.ppid} get WorkingSetSize`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-      const match = output.match(/\\d+/);
+      const output = execSync(`wmic process where processid=${process.ppid} get WorkingSetSize`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+      const match = output.match(/\d+/);
       if (match) return Math.round(parseInt(match[0], 10) / 1024 / 1024);
     } else {
-      const output = execSync(`ps -o rss= -p ${process.ppid}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+      const output = execSync(`ps -o rss= -p ${process.ppid}`, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
       const memKb = parseInt(output.trim(), 10);
       if (!isNaN(memKb)) return Math.round(memKb / 1024);
     }
@@ -154,7 +155,8 @@ async function main() {
           spawn('node', [updaterScript], {
             env: { ...process.env, DISABLE_QUOTA_HOOK: '1' },
             stdio: 'ignore',
-            detached: true
+            detached: true,
+            windowsHide: true
           }).unref();
         }
       } catch (e) {}

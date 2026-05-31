@@ -32,16 +32,16 @@ function findServerCandidates() {
     const candidates = [];
     if (process.platform === 'win32') {
       try {
-        output = execSync('wmic process where "name like \\'%language_server%\\' or name like \\'%agy%\\'" get ProcessId,CommandLine', { encoding: 'utf8' });
-        const lines = output.split('\\n');
+        output = execSync("wmic process where \"name like '%language_server%' or name like '%agy%'\" get ProcessId,CommandLine", { encoding: 'utf8', windowsHide: true });
+        const lines = output.split('\n');
         for (const line of lines) {
           const lower = line.toLowerCase();
           const isCli = lower.includes('agy ');
           const isLang = lower.includes('language_server');
           if (!isCli && !isLang) continue;
-          const matchToken = line.match(/--csrf_token\\s+([^\\s"']+)/);
+          const matchToken = line.match(/--csrf_token\s+([^\s"']+)/);
           const token = matchToken ? matchToken[1] : '';
-          const matchPid = line.trim().match(/\\s+(\\d+)$/);
+          const matchPid = line.trim().match(/\s+(\d+)$/);
           if (matchPid) {
             candidates.push({
               pid: parseInt(matchPid[1], 10),
@@ -54,19 +54,19 @@ function findServerCandidates() {
       } catch (e) {}
     } else {
       try {
-        output = execSync('ps auxww', { encoding: 'utf8' });
-        const lines = output.split('\\n');
+        output = execSync('ps auxww', { encoding: 'utf8', windowsHide: true });
+        const lines = output.split('\n');
         for (const line of lines) {
           const lower = line.toLowerCase();
-          const isCli = /\\bagy(\\s|$)/.test(lower);
+          const isCli = /\bagy(\s|$)/.test(lower);
           const isLang = lower.includes('language_server');
           if (!isCli && !isLang) continue;
-          const parts = line.trim().split(/\\s+/);
+          const parts = line.trim().split(/\s+/);
           if (parts.length < 11) continue;
           const pid = parseInt(parts[1], 10);
           if (isNaN(pid)) continue;
           
-          const matchToken = line.match(/--csrf_token(?:=|\\s+)([^\\s"']+)/);
+          const matchToken = line.match(/--csrf_token(?:=|\s+)([^\s"']+)/);
           const token = matchToken ? matchToken[1] : '';
           candidates.push({
             pid,
@@ -87,15 +87,15 @@ function getListeningPorts(pid) {
   const ports = [];
   try {
     if (process.platform === 'win32') {
-      const output = execSync(`netstat -ano | findstr ${pid}`, { encoding: 'utf8' });
-      const matches = [...output.matchAll(/TCP\\s+(?:127\\.0\\.0\\.1|0\\.0\\.0\\.0):(\\d+).*?LISTENING/g)];
+      const output = execSync(`netstat -ano | findstr ${pid}`, { encoding: 'utf8', windowsHide: true });
+      const matches = [...output.matchAll(/TCP\s+(?:127\.0\.0\.1|0\.0\.0\.0):(\d+).*?LISTENING/g)];
       for (const m of matches) {
         const port = parseInt(m[1], 10);
         if (!ports.includes(port)) ports.push(port);
       }
     } else {
-      const output = execSync(`lsof -nP -a -p ${pid} -iTCP -sTCP:LISTEN`, { encoding: 'utf8' });
-      const matches = [...output.matchAll(/:(\\d+)\\s+\\(LISTEN\\)/g)];
+      const output = execSync(`lsof -nP -a -p ${pid} -iTCP -sTCP:LISTEN`, { encoding: 'utf8', windowsHide: true });
+      const matches = [...output.matchAll(/:(\d+)\s+\(LISTEN\)/g)];
       for (const m of matches) {
         const port = parseInt(m[1], 10);
         if (!ports.includes(port)) ports.push(port);
