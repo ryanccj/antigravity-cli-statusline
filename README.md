@@ -20,8 +20,8 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 
 - **Rich Status Indicators**: Choose from a variety of display items, including:
   - Current AI Model Name
-  - Account API Quota Remaining
-  - Quota Reset Countdown
+  - Account API Available Quota
+  - API Reset Countdown
   - Context Window Usage Percentage
   - Session Token Count
   - CLI RAM Usage
