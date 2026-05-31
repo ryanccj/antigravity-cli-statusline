@@ -6,7 +6,7 @@
 
 繁體中文 | [English](README.md)
 
-本專案提供 Antigravity CLI 狀態列（Status Bar / Footer）的客製化與語系設定技能，適用於多平台並確保在各種環境下都能維持高效與穩定的顯示。
+本專案提供 Antigravity CLI 狀態列（Statusline / Footer）的客製化與語系設定技能，適用於多平台並確保在各種環境下都能維持高效與穩定的顯示。
 
 ## 實際畫面 (Screenshot)
 
@@ -41,7 +41,7 @@
 ## 使用方式
 
 1. 將本技能資料夾放入你的 `skills/` 目錄中。
-2. 透過 Antigravity CLI 執行時，直接輸入 `/antigravity-cli-status-bar` 即可啟動本技能。
+2. 透過 Antigravity CLI 執行時，直接輸入 `/antigravity-cli-statusline` 即可啟動本技能。
 
 ## 使用 AI 一鍵新增其他語言
 

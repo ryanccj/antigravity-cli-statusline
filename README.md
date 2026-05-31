@@ -1,4 +1,4 @@
-# Antigravity CLI Status Bar Skill
+# Antigravity CLI Statusline Skill
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](./SKILL.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -6,15 +6,15 @@
 
 [繁體中文](README.zh-TW.md) | English
 
-This repository provides a Skill for setting up and customizing the Antigravity CLI Status Bar (Footer), including display items and localization settings. It is designed to work across multiple platforms and handles configuration efficiently.
+This repository provides a Skill for setting up and customizing the Antigravity CLI Statusline (Footer), including display items and localization settings. It is designed to work across multiple platforms and handles configuration efficiently.
 
 ## Screenshot
 
 ### Windows
-![Windows Status Bar Screenshot](path/to/your/windows_screenshot.png) <!-- TODO: Upload your Windows image and replace this path -->
+![Windows Statusline Screenshot](path/to/your/windows_screenshot.png) <!-- TODO: Upload your Windows image and replace this path -->
 
 ### macOS
-![macOS Status Bar Screenshot](path/to/your/macos_screenshot.png) <!-- TODO: Upload your macOS image and replace this path -->
+![macOS Statusline Screenshot](path/to/your/macos_screenshot.png) <!-- TODO: Upload your macOS image and replace this path -->
 
 ## Features
 
@@ -30,18 +30,18 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 - **Multi-language Support**: Natively supports Traditional Chinese, English, and Japanese. Features a dynamic architecture that allows you to easily add new languages using AI.
 - **Global & CLI-Specific Settings**: Dynamically parses and updates `~/.gemini/settings.json`, `~/.gemini/antigravity-cli/settings.json`, and project-level settings.
 - **Python-Free Cross-Platform Architecture**: Completely removes Python dependencies. Uses native commands (`ps`, `lsof`) for macOS/Linux. For Windows, it implements a bespoke Silent C# Bridge with `windowsHide` to eliminate terminal flickering, while significantly improving compatibility for environments without Git in PATH and ensuring accurate memory tracking for the `agy.exe` process.
-- **Smart Line Wrapping**: Automatically wraps the status bar to a new line if it exceeds the terminal width.
+- **Smart Line Wrapping**: Automatically wraps the statusline to a new line if it exceeds the terminal width.
 - **Dynamic Visual Color Feedback**: Provides intuitive ANSI color coding, such as a 4-tier warning system (Green/Yellow/Orange/Red) based on API quota or context usage, and unique brand colors automatically applied to different AI model families.
 
 ## Prerequisites
 
 - **Node.js**: This skill is implemented in pure Node.js (`.mjs`). Your system must have Node.js installed, and the `node` command must be available in your terminal.
-- **Git** *(Optional)*: The status bar reads the Git branch of the current project. If you want this feature to work, it's recommended to have Git installed on your system.
+- **Git** *(Optional)*: The statusline reads the Git branch of the current project. If you want this feature to work, it's recommended to have Git installed on your system.
 
 ## Getting Started
 
 1. Place this skill inside your `skills/` directory.
-2. When interacting with Antigravity CLI, simply run `/antigravity-cli-status-bar` to trigger the skill.
+2. When interacting with Antigravity CLI, simply run `/antigravity-cli-statusline` to trigger the skill.
 
 ## Add Your Language Translation via AI
 
@@ -70,7 +70,7 @@ We welcome contributions! If you have ideas for new features, bug fixes, or impr
 
 ## Acknowledgements
 
-Special thanks to [60ke/antigravity-statusline](https://github.com/60ke/antigravity-statusline) for the inspiration behind the quota monitoring feature. Their original project paved the way for status bar integrations. Since their implementation was written in Python, which could be challenging to execute consistently across Windows and macOS, this project was rewritten in JavaScript (Node.js) to ensure seamless cross-platform compatibility without relying on external Python dependencies.
+Special thanks to [60ke/antigravity-statusline](https://github.com/60ke/antigravity-statusline) for the inspiration behind the quota monitoring feature. Their original project paved the way for statusline integrations. Since their implementation was written in Python, which could be challenging to execute consistently across Windows and macOS, this project was rewritten in JavaScript (Node.js) to ensure seamless cross-platform compatibility without relying on external Python dependencies.
 
 ## License
 

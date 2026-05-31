@@ -1,11 +1,11 @@
 ---
-name: antigravity-cli-status-bar
-description: 設定 Antigravity CLI 狀態列（Status Bar）的顯示項目與語系設定。當使用者要求「設定狀態列」、「調整 CLI 頁尾」或啟動此技能時使用。
+name: antigravity-cli-statusline
+description: 設定 Antigravity CLI 狀態列（Statusline）的顯示項目與語系設定。當使用者要求「設定狀態列」、「調整 CLI 頁尾」或啟動此技能時使用。
 ---
 
 # Antigravity 狀態列設定技能
 
-本技能提供有關 Antigravity CLI 狀態列（Status Bar / Footer）的客製化與語系設定指引，適用於多平台與開源分享。
+本技能提供有關 Antigravity CLI 狀態列（Statusline / Footer）的客製化與語系設定指引，適用於多平台與開源分享。
 
 ## 🎯 設定檔路徑規範（動態解析）
 
@@ -207,7 +207,7 @@ class Program {
 ## 🚀 Quick Start (快速啟用)
 
 要在新裝置或當前工作區中啟用此技能並設定彩色狀態列，AI 代理只需引導使用者執行：
-1. 在聊天框中輸入：`/antigravity-status-bar`
+1. 在聊天框中輸入：`/antigravity-cli-statusline`
 2. 在彈出的問卷第一階段選取顯示語系（例如 `zh-tw`）。
 3. 在第二階段勾選要啟用的狀態列指標。
 4. 代理會全自動註冊與部署 Hook，部署完成後狀態列會即時熱更新見效，無需重開 CLI！
