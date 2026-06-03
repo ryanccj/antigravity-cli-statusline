@@ -22,7 +22,7 @@ Since this project dynamically handles languages within single files, please DO 
 - **Find Step 4 (步驟 4)**: Add a bullet point explaining the language format for your code (e.g., `* 若為 [LANG_CODE]，請使用[Target Language]說明配上英文識別碼。`).
 
 ### 2. Modify `scripts/statusline-quota.mjs`
-- **Find the `const i18n = {` dictionary**: Add a new `[LANG_CODE]` object inside it. Translate all 9 status indicators into [Target Language]. Look at the `zh-tw` or `us` examples and keep the ANSI color variables (like `${BOLD}`) exactly the same.
+- **Find the `const i18n = {` dictionary**: Add a new `[LANG_CODE]` object inside it. Translate all 12 status indicators into [Target Language]. Look at the `zh-tw` or `us` examples and keep the ANSI color variables (like `${BOLD}`) exactly the same.
 - **Find the `getGitBranch(lang)` function**: Update **all** the hardcoded ternary operators (there are two places) to include the translation for "No VC" in [Target Language].
 - **Find the `countdownVal` variable**: Update the hardcoded ternary operator to include the translation for "N/A" or "None" in [Target Language].
 ````
@@ -51,7 +51,7 @@ We welcome contributions! If you have ideas for new features, bug fixes, or impr
 - **尋找「步驟 4」**：在列舉說明格式的地方，補上你的語系（例如：`* 若為 [LANG_CODE]，請使用【目標語言】說明配上英文識別碼。`）。
 
 ### 2. 修改 `scripts/statusline-quota.mjs`
-- **尋找 `const i18n = {` 字典**：在裡面新增一個 `[LANG_CODE]` 的物件，並把裡面 9 個狀態列指標翻譯成【目標語言】。請參考 `zh-tw` 或 `us` 的格式，務必保留原有的 ANSI 色彩變數。
+- **尋找 `const i18n = {` 字典**：在裡面新增一個 `[LANG_CODE]` 的物件，並把裡面 12 個狀態列指標翻譯成【目標語言】。請參考 `zh-tw` 或 `us` 的格式，務必保留原有的 ANSI 色彩變數。
 - **尋找 `getGitBranch(lang)` 函式**：修改裡面**所有**寫死的三元運算子（共兩處），加上【目標語言】對於「無版本控制」的翻譯。
 - **尋找 `countdownVal` 變數**：修改後面的三元運算子，加上【目標語言】對於「無 / N/A」的翻譯。
 ````

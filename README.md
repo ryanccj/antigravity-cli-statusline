@@ -36,6 +36,8 @@ This repository provides a Skill for setting up and customizing the Antigravity 
   - Account Plan Tier
   - Account Email
   - AI Credits
+- **Customizable Display Order & Filtering**: Interactively select which indicators to display and customize their exact order through an intuitive, multi-stage setup wizard.
+- **Hot-Reload Support**: Changes to the statusline configuration are applied immediately, without requiring a CLI restart.
 - **Multi-language Support**: Natively supports Traditional Chinese, English, and Japanese. Features a dynamic architecture that allows you to easily add new languages using AI.
 - **Global & CLI-Specific Settings**: Dynamically parses and updates `~/.gemini/settings.json`, `~/.gemini/antigravity-cli/settings.json`, and project-level settings.
 - **Python-Free Cross-Platform Architecture**: Completely removes Python dependencies. Uses native commands (`ps`, `lsof`) for macOS/Linux. For Windows, it implements a bespoke Silent C# Bridge with `windowsHide` to eliminate terminal flickering, while significantly improving compatibility for environments without Git in PATH and ensuring accurate memory tracking for the `agy.exe` process.

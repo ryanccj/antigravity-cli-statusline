@@ -226,7 +226,7 @@ async function main() {
     let totalInput = contextWindow.total_input_tokens || 0;
     let totalOutput = contextWindow.total_output_tokens || 0;
     let usedPctNum = contextWindow.used_percentage || 0;
-    const contextSize = contextWindow.context_window_size || 1048576;
+    let contextSize = contextWindow.context_window_size || 0;
     
     if (totalInput === 0 && totalOutput === 0) {
       try {
@@ -235,6 +235,7 @@ async function main() {
           totalInput = cachedCtx.total_input_tokens || 0;
           totalOutput = cachedCtx.total_output_tokens || 0;
           if (cachedCtx.used_percentage) usedPctNum = cachedCtx.used_percentage;
+          if (cachedCtx.context_window_size) contextSize = cachedCtx.context_window_size;
         }
       } catch (e) {}
     } else {
@@ -243,10 +244,13 @@ async function main() {
         writeFileSync(ctxCachePath, JSON.stringify({
           total_input_tokens: totalInput,
           total_output_tokens: totalOutput,
-          used_percentage: usedPctNum
+          used_percentage: usedPctNum,
+          context_window_size: contextSize
         }), { encoding: 'utf8' });
       } catch (e) {}
     }
+    
+    if (!contextSize) contextSize = 1048576;
     
     if (contextSize > 0 && totalInput > 0 && !usedPctNum) {
       usedPctNum = (totalInput / contextSize) * 100;
@@ -259,17 +263,29 @@ async function main() {
     const rssMem = getCliMemoryMB();
     const memUsage = `${rssMem}MB`;
     const totalTokens = totalInput;
-    const tokenCount = `${formatTokens(totalTokens)} / ${formatTokens(contextSize)}`;
+    const tokenCount = `${contextColor}${formatTokens(totalTokens)}${RESET} / ${formatTokens(contextSize)}`;
     const countdownVal = modelQuota.refreshes_in || (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A'));
     const gitBranch = getGitBranch(lang);
     const projectName = basename(process.cwd());
     const projectFullPath = process.cwd();
     
     const unknownStr = lang === 'zh-tw' ? '未知' : (lang === 'jp' ? '不明' : 'Unknown');
-    // 原本透過 meta 取得，現在改為優先透過 cache (背景自動抓取) 取得
-    const planTier = (cache && cache.planTier) ? cache.planTier : (meta?.account?.plan_tier || unknownStr);
-    const accountEmail = (cache && cache.email) ? cache.email : (meta?.account?.email || unknownStr);
-    const aiCredits = (cache && cache.aiCredits) ? cache.aiCredits : (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A'));
+    
+    // 存取帳號快取 (解決背景 redraw 時 meta 為空的問題)
+    const accountMetaPath = join(os.homedir(), '.gemini', 'tmp', 'account_meta_cache.json');
+    let cachedAccount = {};
+    try { if (existsSync(accountMetaPath)) cachedAccount = JSON.parse(readFileSync(accountMetaPath, 'utf8')); } catch (e) {}
+    
+    if (meta && meta.account && (meta.account.email || meta.account.plan_tier || meta.account.ai_credits)) {
+      if (meta.account.email) cachedAccount.email = meta.account.email;
+      if (meta.account.plan_tier) cachedAccount.planTier = meta.account.plan_tier;
+      if (meta.account.ai_credits) cachedAccount.aiCredits = meta.account.ai_credits;
+      try { writeFileSync(accountMetaPath, JSON.stringify(cachedAccount), { encoding: 'utf8' }); } catch (e) {}
+    }
+
+    const planTier = (cache && cache.planTier) ? cache.planTier : (meta?.account?.plan_tier || cachedAccount.planTier || unknownStr);
+    const accountEmail = (cache && cache.email) ? cache.email : (meta?.account?.email || cachedAccount.email || unknownStr);
+    const aiCredits = (cache && cache.aiCredits) ? cache.aiCredits : (meta?.account?.ai_credits || cachedAccount.aiCredits || (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A')));
 
     const i18n = {
       'zh-tw': {
