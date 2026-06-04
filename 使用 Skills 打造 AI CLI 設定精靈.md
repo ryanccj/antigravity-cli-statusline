@@ -152,6 +152,14 @@ LLM 處理長文本的基礎是注意力機制 (Attention Mechanism)。當 `SKIL
      * **第二道防線（寫入後驗證）**：每次寫完設定檔後，強制讀回前 3 個位元組與 `EF BB BF` 比對；若命中即就地剝除並重寫。這道驗證的價值在於：即便代理在某次推理中違反了第一道防線，或設定檔已被歷史污染，第二道防線也能在 Skill 結束前自動清乾淨，達成**自癒式（Self-Healing）跨平台容錯**。
    * **架構意義**：這個案例揭示了一個更普遍的原理——在跨平台 Agent 設計中，「文字檔」並不是平台無關的抽象，它的編碼預設行為會隨 OS 與 Shell 版本而變動，而且這些差異往往**只在被下游嚴格解析器消費時才會現形**。因此凡是要被本機原生程式（尤其 Go/Rust 等對 BOM 敏感的語言生態）讀取的設定檔，都必須在 Skill 中做「寫入工具白名單 + 寫入後位元組驗證」雙保險，不能僅依賴「我寫的時候有指定 UTF-8」這種一廂情願的假設。
 
+5. **作業系統指令棄用危機 (OS Command Deprecation Crises)**：
+   * **陷阱**：在跨平台環境中，依賴特定系統內建工具（如 Windows 上的 `wmic`）來獲取行程（Process）資訊是危險的。微軟已在現代 Windows（如 Windows 11）中預設棄用並移除了 `wmic` 工具。若提示詞（Prompt）或腳本硬編碼強依賴此工具，會直接導致例外崩潰，使得狀態列（Statusline）在背景獲取進程 PID 與記憶體用量時失敗，無聲無息地回傳「未知」與「無」。
+    * **防禦架構**：在 Windows 上推薦直接改用 PowerShell 的 `Get-CimInstance Win32_Process` 命令（例如：`Get-CimInstance Win32_Process -Filter "Name like '%agy%'"`）來取代 `wmic`。此命令同時內建於 Windows 10 與 Windows 11，且能穩定獲取 `ProcessID` 與 `CommandLine`（用以解析 `--csrf_token` 參數），是實現高相容性、零 dependency 的跨 Windows 世代黃金方案。
+
+6. **靜默覆寫與開發環境腳本複製漏洞 (Development Overwrite & Local Script Sync Holes)**：
+   * **陷阱**：在混合架構中，若 AI 技能提示詞中寫死「直接從本技能的目錄（即全域技能存放目錄）讀取腳本進行部署」，這會產生致命的**開發期覆寫漏洞**。當開發者正在當前專案工作區開發與修改最新版的腳本時，AI 代理一旦被喚醒執行該技能，就會無視工作區最新變更，固執地從全域目錄拉取舊腳本將其覆寫回去。
+   * **防禦架構**：提示詞中必須實作**工作區優先（Workspace-First）路由**。在 Prompt 內指引代理「優先讀取目前作用中工作區下的 `scripts/` 目錄檔案，若不存在才退回到技能目錄讀取」，確保開發中的最新代碼能被即時部署與測試。
+
 ### 4.5 突破工作區盲區：.gitignore 的資安與讀取悖論 (Overcoming Workspace Blind Spots: The .gitignore Paradox)
 
 在處理如 `local.properties`、`.env` 等包含敏感金鑰（API Key）的設定檔時，開發者通常會基於資安考量將這些檔案加入 `.gitignore` 中。然而，這會引發一個架構上的悖論：現代 AI Agent 在進行 Workspace 掃描或使用搜尋工具（如 `grep_search`）時，底層邏輯會預設遵循 `.gitignore` 的規則，導致這些包含金鑰的檔案成為 Agent 的「視覺盲區（Blind Spots）」，進而引發讀取失敗或產生未設定的幻覺。
@@ -190,6 +198,8 @@ LLM 處理長文本的基礎是注意力機制 (Attention Mechanism)。當 `SKIL
     *   是否已針對易引發「工具幻覺（Tool-use Hallucination）」的步驟（如字串解析），加上了明確的邊界約束指令？
     *   需要動態求值的系統參數，是否使用了具備強烈「反制字面依從性」的佔位符與警告？
     *   針對多層級設定檔，是否加入了防範「靜默覆寫（Silent Overwrite）」的高層級警告（如 `[!CAUTION]`）？
+    *   是否已針對 Windows 上的 `wmic` 移除或棄用問題，實作了 fallback 方案（如 `tasklist`）以保證行程查詢的穩健性？
+    *   部署步驟是否採用了「工作區優先（Workspace-First）」的腳本路由規則，避免在開發階段將工作區的最新腳本覆寫為全域的舊版腳本？
 4.  [ ] **模型降級相容測試 (Degradation Compatibility Test)**：此 Prompt 策略是否已拉高快速模型（Flash 系列）的安全下限，防止其發生暴走或崩潰？同時，對於深度思考模型（Pro 系列），這些約束是否能確保其 100% 穩定執行而不會引發過度解讀？
 
 > **架構宣言**：在 AI Agent 時代，開發「設定精靈」不再只是撰寫流程碼，而是進行一場**認知邊界的設計**。透過將底層運算與高階邏輯徹底解耦，並在提示詞中實施精密的護欄工程（Guardrails Engineering），我們才能打造出既具備人類般靈活智慧，又擁有機器般絕對穩定性的新世代互動系統。

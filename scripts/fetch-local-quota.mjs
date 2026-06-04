@@ -32,19 +32,27 @@ function findServerCandidates() {
     const candidates = [];
     if (process.platform === 'win32') {
       try {
-        output = execSync("wmic process where \"name like '%language_server%' or name like '%agy%'\" get ProcessId,CommandLine", { encoding: 'utf8', windowsHide: true });
-        const lines = output.split('\n');
-        for (const line of lines) {
-          const lower = line.toLowerCase();
-          const isCli = lower.includes('agy ');
-          const isLang = lower.includes('language_server');
-          if (!isCli && !isLang) continue;
-          const matchToken = line.match(/--csrf_token\s+([^\s"']+)/);
-          const token = matchToken ? matchToken[1] : '';
-          const matchPid = line.trim().match(/\s+(\d+)$/);
-          if (matchPid) {
+        const psCmd = "powershell.exe -NoProfile -Command \"Get-CimInstance Win32_Process -Filter 'Name like ''%agy%'' or Name like ''%language_server%''' | Select-Object ProcessID, CommandLine | ConvertTo-Json -Compress\"";
+        output = execSync(psCmd, { encoding: 'utf8', windowsHide: true }).trim();
+        if (output) {
+          let processes = JSON.parse(output);
+          if (!Array.isArray(processes)) {
+            processes = [processes];
+          }
+          for (const proc of processes) {
+            const cmdLine = proc.CommandLine || '';
+            const pid = proc.ProcessID;
+            if (!pid) continue;
+            
+            const lower = cmdLine.toLowerCase();
+            const isCli = lower.includes('agy') && !lower.includes('statusline-quota');
+            const isLang = lower.includes('language_server');
+            if (!isCli && !isLang) continue;
+            
+            const matchToken = cmdLine.match(/--csrf_token\s+([^\s"']+)/) || cmdLine.match(/--csrf_token=([^\s"']+)/);
+            const token = matchToken ? matchToken[1] : '';
             candidates.push({
-              pid: parseInt(matchPid[1], 10),
+              pid: pid,
               csrf_token: token,
               score: (isCli ? 40 : 0) + (isLang ? 20 : 0) + (token ? 10 : 0),
               kind: isCli ? 'cli' : 'language_server'
