@@ -26,16 +26,16 @@ function getGitBranch(lang) {
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GRAY = "\x1b[90m";
-const GREEN = "\x1b[32m";
-const YELLOW = "\x1b[33m";
-const ORANGE = "\x1b[38;5;208m";
-const RED = "\x1b[31m";
+const BLUE = "\x1b[38;2;87;202;255m";
+const GREEN = "\x1b[38;2;92;219;109m";
+const YELLOW = "\x1b[38;2;255;212;39m";
+const RED = "\x1b[38;2;255;125;175m";
 
-// 四階梯色彩辨識：100~75% 綠、74~50% 黃、49~25% 澄、24~0% 紅
+// 四階梯色彩辨識（Google Material 配色）：100~75% 藍、74~50% 綠、49~25% 黃、24~0% 紅
 function getColorByPercentage(pct) {
-  if (pct >= 75) return GREEN;
-  if (pct >= 50) return YELLOW;
-  if (pct >= 25) return ORANGE;
+  if (pct >= 75) return BLUE;
+  if (pct >= 50) return GREEN;
+  if (pct >= 25) return YELLOW;
   return RED;
 }
 

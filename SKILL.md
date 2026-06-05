@@ -43,11 +43,11 @@ description: 本技能用於設定 Antigravity CLI（agy）的狀態列（Status
    - Windows：`Get-CimInstance Win32_Process` + `netstat -ano`（不再使用已棄用的 `wmic`）
 2. **所有 `fs.writeFileSync` 強制加 `{ encoding: 'utf8' }`**（防 Windows UTF-16 崩潰）
 3. **智慧型多行換行（Smart Line Wrapping by Feature）**：讀取 `meta.terminal_width` 或 `process.stdout.columns` 得知終端機寬度。組合狀態列字串時，若下一個加入的指標會讓整行長度（不含 ANSI 碼）超過終端機寬度，必須將該指標折疊到新的一行（插入 `\n`）。
-4. **四階段精確色彩辨識（Google Material 配色）**：
-   - `100~75%`：藍色 `#4285f4`
-   - `74~50%`：綠色 `#34a853`
-   - `49~25%`：黃色 `#f9ab00`
-   - `24~0%`：紅色 `#ea4335`
+4. **四階段精確色彩辨識（24-bit truecolor 柔和配色）**：
+   - `100~75%`：藍色 `#57caff`（`\x1b[38;2;87;202;255m`）
+   - `74~50%`：綠色 `#5cdb6d`（`\x1b[38;2;92;219;109m`）
+   - `49~25%`：黃色 `#ffd427`（`\x1b[38;2;255;212;39m`）
+   - `24~0%`：紅色 `#ff7daf`（`\x1b[38;2;255;125;175m`）
 
 Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide: true` 規範詳見 [references/windows.md](references/windows.md)。
 
