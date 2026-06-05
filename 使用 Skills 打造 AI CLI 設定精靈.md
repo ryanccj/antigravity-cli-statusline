@@ -1,9 +1,3 @@
----
-title: 使用 Skills 打造 AI CLI 設定精靈
-tags: [GenAI]
-
----
-
 # 使用 Skills 打造 AI CLI 設定精靈
 
 ###### tags: `GenAI`
@@ -186,6 +180,16 @@ LLM 處理長文本的基礎是注意力機制 (Attention Mechanism)。當 `SKIL
 
 透過這種架構，敏感憑證永遠只在「本地硬碟」與「腳本執行緒」中流動，100% 阻斷了 Key 進入 LLM Context Window 的途徑，徹底消除從雲端到本地端的所有外洩隱患。
 
+### 4.7 環境預檢與依賴降級防護 (Environmental Pre-checks & Dependency Degradation Protection)
+
+在設計依賴外部執行環境（如 Node.js、Python）的 AI 代理技能時，最忌諱「假設環境已就緒」。若未在執行初期進行預檢，腳本部署後可能會引發難以追查的底層系統錯誤（如 `exit status 127`），導致功能無聲無息地失效，嚴重破壞使用者體驗。
+
+**防禦性設計與漸進式降級 (Defensive Design & Graceful Degradation)**：
+必須在 `SKILL.md` 的最前線（Pre-check 階段）強制代理執行環境依賴掃描，並建立完善的降級處理流程：
+1. **跨平台動態偵測**：要求代理使用跨平台通用的指令（如 `node --version`）或依作業系統分支使用對應指令（macOS/Linux 的 `which`、Windows 的 `where`），動態驗證環境是否具備。
+2. **故障模式的透明化 (Transparency of Failure Modes)**：當偵測到依賴缺失時，Agent 絕不能直接報錯中斷，而必須向使用者清楚說明**後果**（例如：「缺少 Node.js 將導致 CLI 狀態列完全空白且自動停用」），讓使用者理解錯誤的根源。
+3. **互動式決策中斷點 (Interactive Decision Breakpoint)**：透過呼叫互動工具（如 `ask_question`），將控制權交還給使用者。提供「中斷並安裝依賴」或「強制繼續設定（預寫入配置）」的選項。這種設計確保了即使在環境殘缺的狀態下，Agent 也能完成資料配置，待使用者後續補齊環境後即可無縫生效，達成極致的容錯與 UX 體驗。
+
 ---
 
 ## 5. 實戰總結：建構高階設定精靈的系統性 Check List
@@ -201,5 +205,6 @@ LLM 處理長文本的基礎是注意力機制 (Attention Mechanism)。當 `SKIL
     *   是否已針對 Windows 上的 `wmic` 移除或棄用問題，實作了 fallback 方案（如 `tasklist`）以保證行程查詢的穩健性？
     *   部署步驟是否採用了「工作區優先（Workspace-First）」的腳本路由規則，避免在開發階段將工作區的最新腳本覆寫為全域的舊版腳本？
 4.  [ ] **模型降級相容測試 (Degradation Compatibility Test)**：此 Prompt 策略是否已拉高快速模型（Flash 系列）的安全下限，防止其發生暴走或崩潰？同時，對於深度思考模型（Pro 系列），這些約束是否能確保其 100% 穩定執行而不會引發過度解讀？
+5.  [ ] **環境依賴預檢 (Environment Dependency Pre-check)**：是否在流程最前端實作了外部依賴（如 Node.js）的跨平台偵測？並具備互動式的降級決策機制？
 
 > **架構宣言**：在 AI Agent 時代，開發「設定精靈」不再只是撰寫流程碼，而是進行一場**認知邊界的設計**。透過將底層運算與高階邏輯徹底解耦，並在提示詞中實施精密的護欄工程（Guardrails Engineering），我們才能打造出既具備人類般靈活智慧，又擁有機器般絕對穩定性的新世代互動系統。

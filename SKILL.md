@@ -154,7 +154,7 @@ $hasBOM = ($b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -e
 {
   "questions": [
     {
-      "question": "請設定狀態列顯示順序。\n\n目前已選取：\n1. 目前使用的 AI 模型名稱 (model-name)\n2. 帳號真實 API 可用額度 (quota)\n3. 目前對話已消耗的 Context 比例 (context-used)\n\n請在下方輸入框「Write-in...」中輸入以逗號分隔的數字序號或英文識別碼 (如：2, 1, context-used)。未填寫的指標將不予顯示。",
+      "question": "請設定狀態列顯示順序。\n\n目前已選取：\n1. 目前使用的 AI 模型名稱 (model-name)\n2. 帳號真實 API 可用額度 (quota)\n3. 目前對話已消耗的 Context 比例 (context-used)\n\n請在下方輸入框「Write-in...」中輸入以逗號分隔的數字序號或英文識別碼 (如：2, 1, context-used)。您可以使用 `n` 來強制換行。未填寫的指標將不予顯示。",
       "is_multi_select": false,
       "options": [
         "略過，使用原勾選順序啟用全部指標",
@@ -206,14 +206,16 @@ $hasBOM = ($b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -e
         *   若使用者在 Write-in 欄位輸入了自訂排序字串（例如 `"3, model-name, 2"`）：
             1. 將字串以逗號 `,` 拆分，去除每個元素前後的空白。
             2. 遍歷每個拆分項目：
+               * 若項目為小寫字母 `n` 或 `newline`：
+                 * 視為「強制換行符號」，直接保留不作轉換（這允許使用者透過輸入 `n` 來強制折行）。
                * 若項目為正整數數字 $N$：
                  * 檢查 $N$ 是否介於 `1` 至「已勾選英文識別碼陣列」的長度之間。
                  * 若符合，則將其對應至該陣列中索引值為 $N-1$ 的英文識別碼。
-               * 若項目不是數字：
+               * 若項目不是數字，且不是 `n` 或 `newline`：
                  * 檢查其是否精確等於「已勾選英文識別碼陣列」中的某個英文識別碼。
                  * 若符合，則直接使用該識別碼。
                * 若都不符合（如打錯字或數字超出範圍），則直接排除該項目。
-            3. **去重（Deduplication）**：若解析出來的識別碼已存在於排序結果中，則予以忽略，以第一個出現的為準。
+            3. **去重（Deduplication）**：若解析出來的識別碼已存在於排序結果中，則予以忽略（**但 `n` 或 `newline` 允許重複出現**），以第一個出現的為準。
             4. **捨棄未提及項目**：最終寫入的 `ui.footer.items` **僅保留**此解析排序過程中成功匹配到的英文識別碼，其餘在步驟 4 勾選但未在此處提及的項目將被剔除（不啟用）。
             5. 例如，已勾選為 `['model-name', 'quota', 'memory-usage']`。若排序輸入 `"3, 1, invalid-item"`，則解析結果為 `['memory-usage', 'model-name']`（已排除 `invalid-item`，且未提及的 `quota` 被捨棄）。
 *   將 `ui.language` 與解析完成的最終識別碼陣列（`ui.footer.items`）寫入設定檔中。
@@ -270,12 +272,12 @@ $hasBOM = ($b.Length -ge 3 -and $b[0] -eq 0xEF -and $b[1] -eq 0xBB -and $b[2] -e
 1. 透過 `cmd.exe /c where agy` 指令取得 CLI 執行檔的精確路徑，並提取其所在的資料夾（例如 `C:\Users\...\AppData\Local\agy\bin`）。
 2. 透過 `node -e "console.log(require('path').dirname(process.execPath))"` 取得當前 Node.js 的全域目錄。若該目錄下存在之前錯誤放置的 `sh.exe`，請**務必**提示使用者手動將其刪除（請提供精確的絕對路徑，例如 `C:\Program Files\nodejs\sh.exe`），以免嚴重污染系統環境。
 3. 請優先讀取當前工作區（Workspace）根目錄下 `scripts/sh_hidden.cs` 檔案（若處於該專案的開發環境）；若檔案不存在或在其他工作區，則退回從本技能的目錄中讀取 `scripts/sh_hidden.cs` 檔案（請自行推導出該檔案的真實絕對路徑），將其複製或寫入到暫存資料夾。
-4. 使用 Windows 內建的 C# 編譯器（通常位於 `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe`）將其編譯至真正的 CLI 目錄：
-   `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe /target:winexe /out:"<CLI 執行目錄>\sh.exe" "暫存目錄\sh_hidden.cs"`
+4. 動態尋找 Windows 內建的 C# 編譯器 (`csc.exe`) 的絕對路徑。嚴禁寫死路徑與版本號，請透過指令（例如 PowerShell：`(Get-ChildItem -Path 'C:\\Windows\\Microsoft.NET\\Framework64\\v*\\csc.exe' | Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName`）取得最新版編譯器路徑，並將其編譯至真正的 CLI 目錄：
+   `"<動態取得的 csc.exe 絕對路徑>" /target:winexe /out:"<CLI 執行目錄>\\sh.exe" "暫存目錄\\sh_hidden.cs"`
 這樣當 CLI 發出 `sh -c "node ..."` 時，就會被這個靜默程式完美攔截，在完全沒有黑框閃爍的情況下執行背景更新！
 
 ### 步驟 8：回報與重新載入提示
-完成檔案編輯與自動 Hook 腳本部署後，回報成功訊息。**AI 代理必須嚴格遵守：根據使用者在第一階段所選擇的語系（zh-tw / us / jp）來撰寫最終的回覆訊息**（例如，若使用者選擇日本語 jp，請務必全程使用流利的日文回覆）。請在回覆中告知使用者：「狀態列設定支援熱更新（Hot Reload），設定已自動在 CLI 底部即時生效，無需重新啟動。」此外，**請在最後溫馨提醒使用者：若他們不再使用舊版的 Gemini CLI，可以自行安全地手動刪除 `~/.gemini/hooks/statusline-quota.mjs` 與 `~/.gemini/hooks/fetch-local-quota.mjs` 這兩個舊版腳本檔，以節省空間並避免混淆。**
+完成檔案編輯與自動 Hook 腳本部署後，回報成功訊息。**AI 代理必須嚴格遵守：根據使用者在第一階段所選擇的語系（zh-tw / us / jp）來撰寫最終的回覆訊息**（例如，若使用者選擇日本語 jp，請務必全程使用流利的日文回覆）。請在回覆中告知使用者：「狀態列設定支援熱更新（Hot Reload），設定已自動在 CLI 底部即時生效，無需重新啟動。」此外，**AI 代理必須先檢查舊版腳本是否存在**（可使用 Node 的 `fs.existsSync`，或跨平台終端機指令如 macOS/Linux 的 `test -f`、Windows PowerShell 的 `Test-Path` 來檢查 `~/.gemini/hooks/statusline-quota.mjs` 與 `~/.gemini/hooks/fetch-local-quota.mjs`）。**只有當偵測到任一舊版腳本存在時**，才在回覆最後溫馨提醒使用者：「若不再使用舊版的 Gemini CLI，可安全地手動刪除上述兩個舊版腳本檔，以節省空間並避免混淆。」若檔案皆不存在，則完全略過此提醒，避免造成使用者困惑。
 
 ---
 
