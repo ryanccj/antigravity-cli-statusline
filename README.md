@@ -56,8 +56,18 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 
 ## Getting Started
 
-To install this plugin, use the built-in command in Antigravity CLI:
+> [!IMPORTANT]
+> **macOS Users:** There is currently a known bug in the Antigravity CLI where remote GitHub installations (`agy plugin install https://...`) fail with `unsupported extension format` due to symlink resolution issues with macOS's `/var` directory. If you encounter this error, please use the local installation method instead.
 
+To install this plugin, you can either use the remote installation (for Linux/Windows) or the local installation method (required for macOS):
+
+**Method 1: Local Installation (Recommended for macOS)**
+```bash
+git clone https://github.com/andyawd/antigravity-cli-statusline.git /tmp/statusline-plugin
+agy plugin install /tmp/statusline-plugin
+```
+
+**Method 2: Remote Installation**
 ```bash
 agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 ```

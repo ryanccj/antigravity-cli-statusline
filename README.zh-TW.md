@@ -56,8 +56,18 @@
 
 ## 使用方式
 
-要安裝此外掛（Plugin），請使用 Antigravity CLI 內建的指令：
+> [!IMPORTANT]
+> **macOS 用戶注意：** 目前 Antigravity CLI 存在一個已知的路徑解析 Bug，在 macOS 上直接透過網址安裝（`agy plugin install https://...`）會因為 `/var` 目錄的符號連結問題，導致報錯 `unsupported extension format`。若您遇到此錯誤，請務必改用下方的「本地安裝」方式。
 
+要安裝此外掛（Plugin），您可以選擇遠端安裝（適用於 Linux/Windows）或本地安裝（macOS 必用）：
+
+**方法一：本地安裝（macOS 推薦）**
+```bash
+git clone https://github.com/andyawd/antigravity-cli-statusline.git /tmp/statusline-plugin
+agy plugin install /tmp/statusline-plugin
+```
+
+**方法二：遠端安裝**
 ```bash
 agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 ```
