@@ -10,9 +10,9 @@ description: 本技能用於設定 Antigravity CLI（agy）的狀態列（Status
 ## ⚠️ References 載入規範（必讀）
 
 本技能的細節分散於下列三份 references/：
-- [`references/windows.md`](references/windows.md) — Windows 特定規範（BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯等）
-- [`references/config-files.md`](references/config-files.md) — 三層設定檔結構、`statusLine` 物件、`trusted_hooks.json` 信任機制
-- [`references/pitfalls.md`](references/pitfalls.md) — 常見陷阱對照表
+- [`references/windows.md`](../references/windows.md) — Windows 特定規範（BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯等）
+- [`references/config-files.md`](../references/config-files.md) — 三層設定檔結構、`statusLine` 物件、`trusted_hooks.json` 信任機制
+- [`references/pitfalls.md`](../references/pitfalls.md) — 常見陷阱對照表
 
 **載入規則（強制）**：
 1. **禁止透過子代理（subagent / Explore Agent）摘要 references/ 內容**，主代理必須親自以 Read 工具讀取原文
@@ -30,7 +30,7 @@ description: 本技能用於設定 Antigravity CLI（agy）的狀態列（Status
 | 專案（條件性）| `<workspace>/.gemini/settings.json` | 若存在則覆寫 |
 
 > [!CAUTION]
-> CLI 專屬設定檔由 agy CLI 自身維護，優先級**高於**全域設定檔。若忽略此檔案，全域設定將被無聲覆蓋！這是本技能中**最致命且最隱蔽的 Bug**。完整路徑解析規則、JSON 結構、跨電腦移植雙保險設計詳見 [references/config-files.md](references/config-files.md)。
+> CLI 專屬設定檔由 agy CLI 自身維護，優先級**高於**全域設定檔。若忽略此檔案，全域設定將被無聲覆蓋！這是本技能中**最致命且最隱蔽的 Bug**。完整路徑解析規則、JSON 結構、跨電腦移植雙保險設計詳見 [references/config-files.md](../references/config-files.md)。
 
 自訂語系偏好記錄於 `ui.language` 屬性中；指標順序記錄於 `ui.footer.items` 陣列中。
 
@@ -49,7 +49,7 @@ description: 本技能用於設定 Antigravity CLI（agy）的狀態列（Status
    - `49~25%`：黃色 `#ffd427`（`\x1b[38;2;255;212;39m`）
    - `24~0%`：紅色 `#ff7daf`（`\x1b[38;2;255;125;175m`）
 
-Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide: true` 規範詳見 [references/windows.md](references/windows.md)。
+Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide: true` 規範詳見 [references/windows.md](../references/windows.md)。
 
 ---
 
@@ -142,7 +142,7 @@ Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide
 
 **【動態解析三層設定檔】**：在 Node.js 預檢通過（或使用者選擇繼續）後，動態展開 `$HOME` / `USERPROFILE`，讀取三層 `settings.json`。檢查目前 `ui.footer.items` 啟用了哪些項目、`ui.language` 設定，以及各設定檔中是否存在空的或殘缺的 `statusLine` 物件（如 `{ "type": "", "command": "", "enabled": true }`）。
 
-**【Windows 平台額外步驟：BOM 預檢】**：讀取每份 `settings.json` 與 `trusted_hooks.json` 時，必須檢查檔案前 3 個位元組是否為 `EF BB BF`（UTF-8 BOM）。若是，記錄該檔案路徑為「需於步驟 5 自動修復」的目標。詳見 [references/windows.md §1](references/windows.md) 與 §3。
+**【Windows 平台額外步驟：BOM 預檢】**：讀取每份 `settings.json` 與 `trusted_hooks.json` 時，必須檢查檔案前 3 個位元組是否為 `EF BB BF`（UTF-8 BOM）。若是，記錄該檔案路徑為「需於步驟 5 自動修復」的目標。詳見 [references/windows.md §1](../references/windows.md) 與 §3。
 
 ### 步驟 3：第二階段問卷（動態語系細部設定 — 勾選啟用項目）
 
@@ -232,22 +232,22 @@ Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide
 
 寫入內容：`ui.language` + 解析後的 `ui.footer.items` + 完整的 `statusLine` 物件（含 `enabled`、`type`、`command`）。
 
-- macOS / Linux 與 Windows 的 `statusLine` JSON 範本、`command` 動態絕對路徑替換規則、`trusted_hooks.json` 信任機制細節（含當前工作區、家目錄、`"*"` 通配符三個鍵）→ 詳見 [references/config-files.md](references/config-files.md)
-- **Windows 平台的 UTF-8 BOM 編碼鐵則（絕對禁止帶 BOM 寫檔的工具清單與保證不帶 BOM 的替代方案）** → 詳見 [references/windows.md](references/windows.md) §1
+- macOS / Linux 與 Windows 的 `statusLine` JSON 範本、`command` 動態絕對路徑替換規則、`trusted_hooks.json` 信任機制細節（含當前工作區、家目錄、`"*"` 通配符三個鍵）→ 詳見 [references/config-files.md](../references/config-files.md)
+- **Windows 平台的 UTF-8 BOM 編碼鐵則（絕對禁止帶 BOM 寫檔的工具清單與保證不帶 BOM 的替代方案）** → 詳見 [references/windows.md](../references/windows.md) §1
 
 > [!CAUTION]
 > 寫入 `command` 時**絕對禁止照抄範例中的 `<真實的使用者家目錄絕對路徑>` 佔位符**，必須動態解析並替換為當下系統環境真實的絕對路徑（例如 `/Users/andy/.gemini/antigravity-cli/hooks/statusline-quota.mjs`）。
 
-**寫入後驗證（Windows 強制）**：每寫完一份設定檔，必須讀回前 3 個位元組驗證；若為 `EF BB BF` 必須就地剝除並重寫，直到通過為止。若步驟 2 預檢階段曾標記出已被 BOM 污染的設定檔，本步驟必須一併執行剝除流程。詳見 [references/windows.md §1](references/windows.md)。
+**寫入後驗證（Windows 強制）**：每寫完一份設定檔，必須讀回前 3 個位元組驗證；若為 `EF BB BF` 必須就地剝除並重寫，直到通過為止。若步驟 2 預檢階段曾標記出已被 BOM 污染的設定檔，本步驟必須一併執行剝除流程。詳見 [references/windows.md §1](../references/windows.md)。
 
 ### 步驟 6：自動部署 Hook 腳本
 
 > [!CAUTION]
-> **絕對禁令（最關鍵的安全規則）**：AI 代理**絕對禁止**自行發明、撰寫、或修改 `statusline-quota.mjs` 與 `fetch-local-quota.mjs` 的底層程式碼來部署！部署時，**必須 100% 準確地讀取本技能 `scripts/` 資料夾中的對應腳本檔案，原封不動地寫入**到使用者的 `hooks` 目錄中。若要更新狀態列邏輯，必須先更新對應的 `scripts/*.mjs` 內容再進行部署，**嚴禁憑空發明或竄改邏輯**！違反此規則將導致狀態列功能殘缺、指標抓取失敗、甚至 CLI 崩潰。
+> **絕對禁令（最關鍵的安全規則）**：AI 代理**絕對禁止**自行發明、撰寫、或修改 `statusline-quota.mjs` 與 `fetch-local-quota.mjs` 的底層程式碼來部署！部署時，**必須 100% 準確地讀取本外掛 `scripts/` 資料夾（相對於本技能為 `../scripts/`）中的對應腳本檔案，原封不動地寫入**到使用者的 `hooks` 目錄中。若要更新狀態列邏輯，必須先更新對應的 `../scripts/*.mjs` 內容再進行部署，**嚴禁憑空發明或竄改邏輯**！違反此規則將導致狀態列功能殘缺、指標抓取失敗、甚至 CLI 崩潰。
 
 **讀取來源（Workspace-First 路由）**：
 1. **優先**讀取當前工作區（Workspace）根目錄下的 `scripts/<filename>`
-2. 若不存在或在其他工作區，**退回**從本技能目錄的 `scripts/<filename>` 讀取（請自行推導出該檔案的真實絕對路徑）
+2. 若不存在或在其他工作區，**退回**從本外掛目錄的 `../scripts/<filename>` 讀取（請自行推導出該檔案的真實絕對路徑）
 
 **部署目標**：
 - `~/.gemini/antigravity-cli/hooks/statusline-quota.mjs`
@@ -255,7 +255,7 @@ Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide
 
 **寫入規範**：必須使用 `fs.writeFileSync(targetPath, content, { encoding: 'utf8' })`，防止 Windows 預設 UTF-16 編碼導致 CLI 崩潰。
 
-**【僅 Windows】編譯靜默 sh.exe**：CLI 底層強制依賴 `sh -c` 執行指令，Windows 缺 `sh.exe`，必須利用內建 `csc.exe` 編譯一個無窗體（`/target:winexe`）的 `sh.exe` 橋接器，徹底消除黑框閃爍。完整步驟（從 `scripts/sh_hidden.cs` 編譯）詳見 [references/windows.md §6](references/windows.md)。
+**【僅 Windows】編譯靜默 sh.exe**：CLI 底層強制依賴 `sh -c` 執行指令，Windows 缺 `sh.exe`，必須利用內建 `csc.exe` 編譯一個無窗體（`/target:winexe`）的 `sh.exe` 橋接器，徹底消除黑框閃爍。完整步驟（從 `../scripts/sh_hidden.cs` 編譯）詳見 [references/windows.md §6](../references/windows.md)。
 
 ### 步驟 7：回報與重新載入提示
 
@@ -263,14 +263,14 @@ Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide
 
 **舊版腳本檢查**：使用 Node 的 `fs.existsSync`，或跨平台終端機指令（macOS/Linux：`test -f`、Windows PowerShell：`Test-Path`）檢查 `~/.gemini/hooks/statusline-quota.mjs` 與 `~/.gemini/hooks/fetch-local-quota.mjs`。**只有當偵測到任一舊版腳本存在時**，才在回覆最後溫馨提醒：「若不再使用舊版的 Gemini CLI，可安全地手動刪除上述兩個舊版腳本檔，以節省空間並避免混淆。」若檔案皆不存在則完全略過此提醒，避免造成使用者困惑。
 
-**故障診斷指引（依語系翻譯）**：在最終回覆末尾加入一句提示：「若日後狀態列突然完全消失（特別是在 agy CLI 內使用 `/statusline`、`/model` 等指令切換之後），請在本技能目錄執行 `node scripts/diagnose-statusline.mjs`，並把完整輸出貼給 AI 代理。該腳本為唯讀診斷工具，會檢查三層 `settings.json`、`trusted_hooks.json`、Hook 檔案存在性、以及最關鍵的 CLI 專屬層 `statusLine.command` 是否被清空（參見 [references/pitfalls.md](references/pitfalls.md) 陷阱 #9）。」
+**故障診斷指引（依語系翻譯）**：在最終回覆末尾加入一句提示：「若日後狀態列突然完全消失（特別是在 agy CLI 內使用 `/statusline`、`/model` 等指令切換之後），請前往本外掛目錄執行 `node scripts/diagnose-statusline.mjs`，並把完整輸出貼給 AI 代理。該腳本為唯讀診斷工具，會檢查三層 `settings.json`、`trusted_hooks.json`、Hook 檔案存在性、以及最關鍵的 CLI 專屬層 `statusLine.command` 是否被清空（參見 [references/pitfalls.md](../references/pitfalls.md) 陷阱 #9）。」
 
 ---
 
 ## 🚨 常見陷阱速查
 
-完整對照表（8 條陷阱與修正做法）詳見 [references/pitfalls.md](references/pitfalls.md)。最關鍵的三條速記：
+完整對照表（8 條陷阱與修正做法）詳見 [references/pitfalls.md](../references/pitfalls.md)。最關鍵的三條速記：
 
 1. **必須同步寫入三層設定檔**（特別是 CLI 專屬的 `~/.gemini/antigravity-cli/settings.json`，是最致命的盲點）
 2. **Windows 寫設定檔絕對禁止帶 BOM**，寫入後必須驗證前 3 個位元組
-3. **絕對禁止憑空生成 Hook 腳本**，必須從 `scripts/` 讀取原文部署
+3. **絕對禁止憑空生成 Hook 腳本**，必須從本外掛的 `../scripts/` 讀取原文部署

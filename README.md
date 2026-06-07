@@ -1,7 +1,7 @@
 # Antigravity CLI Statusline Skill
 
-[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](./SKILL.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Version](https://img.shields.io/badge/version-1.2.2-blue.svg)](skills/antigravity-cli-statusline.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
 [繁體中文](README.zh-TW.md) | English
@@ -56,9 +56,13 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 
 ## Getting Started
 
-1. Go to the **[Releases page](../../releases/latest)** of this repository and download the latest release archive (`.zip` or `.tar.gz`).
-2. Extract the archive and place the `antigravity-cli-statusline` folder into your `~/.gemini/skills/` directory.
-3. When interacting with Antigravity CLI, simply run `/antigravity-cli-statusline` to trigger the skill.
+To install this plugin, use the built-in command in Antigravity CLI:
+
+```bash
+agy plugin install https://github.com/andyawd/antigravity-cli-statusline
+```
+
+Once installed, you can launch the setup by running `/antigravity-cli-statusline` in your Antigravity CLI prompt.
 
 ## Contributing
 
@@ -66,7 +70,7 @@ We welcome contributions! For details on how to submit Pull Requests, report bug
 
 ## Troubleshooting & Advanced References
 
-For deeper technical details, see [`SKILL.md`](SKILL.md) and the three reference documents under `references/`:
+For deeper technical details, see [`skills/antigravity-cli-statusline.md`](skills/antigravity-cli-statusline.md) and the three reference documents under `references/`:
 
 - [`references/windows.md`](references/windows.md) — Windows-specific rules (UTF-8 BOM, `sh.exe` bridge, `csc.exe` compilation, `windowsHide`, `Get-CimInstance`)
 - [`references/config-files.md`](references/config-files.md) — Three-layer settings file structure, `statusLine` object, `trusted_hooks.json` trust mechanism

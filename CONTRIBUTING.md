@@ -17,8 +17,8 @@ I want to add a [Target Language] translation version for this Antigravity CLI S
 
 Since this project dynamically handles languages within single files, please DO NOT create new directories. Please follow these explicit steps to modify the existing files:
 
-### 1. Modify `SKILL.md`
-- **Find Step 2 (步驟 2)**: Add the `"[Target Language] ([LANG_CODE])"` option to the `options` JSON array.
+### 1. Modify `skills/antigravity-cli-statusline.md`
+- **Find Step 1 (步驟 1)**: Add the `"[Target Language] ([LANG_CODE])"` option to the `options` JSON array.
 - **Find Step 4 (步驟 4)**: Add a bullet point explaining the language format for your code (e.g., `* 若為 [LANG_CODE]，請使用[Target Language]說明配上英文識別碼。`).
 
 ### 2. Modify `scripts/statusline-quota.mjs`
@@ -46,8 +46,8 @@ We welcome contributions! If you have ideas for new features, bug fixes, or impr
 
 由於本專案是透過單一檔案動態處理多國語系，請「不要」建立新的資料夾。請嚴格遵守以下步驟，直接修改現有檔案：
 
-### 1. 修改 `SKILL.md`
-- **尋找「步驟 2」**：在第一階段問卷 JSON 的 `options` 陣列中，新增 `"【目標語言】 ([LANG_CODE])"` 的選項。
+### 1. 修改 `skills/antigravity-cli-statusline.md`
+- **尋找「步驟 1」**：在第一階段問卷 JSON 的 `options` 陣列中，新增 `"【目標語言】 ([LANG_CODE])"` 的選項。
 - **尋找「步驟 4」**：在列舉說明格式的地方，補上你的語系（例如：`* 若為 [LANG_CODE]，請使用【目標語言】說明配上英文識別碼。`）。
 
 ### 2. 修改 `scripts/statusline-quota.mjs`

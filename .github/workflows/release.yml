@@ -18,7 +18,8 @@ jobs:
       - name: Prepare Extension Directory
         run: |
           mkdir -p dist/antigravity-cli-statusline
-          cp SKILL.md dist/antigravity-cli-statusline/
+          cp plugin.json dist/antigravity-cli-statusline/
+          cp -r skills dist/antigravity-cli-statusline/
           cp -r scripts dist/antigravity-cli-statusline/
           cp -r references dist/antigravity-cli-statusline/
 

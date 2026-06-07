@@ -1,7 +1,7 @@
 # Antigravity CLI 狀態列設定技能
 
-[![版本](https://img.shields.io/badge/版本-1.2.2-blue.svg)](./SKILL.md)
-[![授權條款: MIT](https://img.shields.io/badge/授權條款-MIT-yellow.svg)](./LICENSE)
+[![版本](https://img.shields.io/badge/版本-1.2.2-blue.svg)](skills/antigravity-cli-statusline.md)
+[![授權條款: MIT](https://img.shields.io/badge/授權條款-MIT-yellow.svg)](LICENSE)
 [![平台](https://img.shields.io/badge/平台-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
 繁體中文 | [English](README.md)
@@ -56,9 +56,13 @@
 
 ## 使用方式
 
-1. 請前往本專案的 **[Releases 頁面](../../releases/latest)** 下載最新的發佈壓縮檔（`.zip` 或 `.tar.gz`）。
-2. 解壓縮後，將裡面的 `antigravity-cli-statusline` 資料夾直接放入你的 `~/.gemini/skills/` 目錄中。
-3. 透過 Antigravity CLI 執行時，直接輸入 `/antigravity-cli-statusline` 即可啟動本技能。
+要安裝此外掛（Plugin），請使用 Antigravity CLI 內建的指令：
+
+```bash
+agy plugin install https://github.com/andyawd/antigravity-cli-statusline
+```
+
+安裝完成後，在 Antigravity CLI 提示字元中輸入 `/antigravity-cli-statusline` 即可啟動本技能進行狀態列設定。
 
 ## 貢獻指南 (Contributing)
 
@@ -66,7 +70,7 @@
 
 ## 進階參考與故障排除
 
-想深入了解技術細節，可參閱 [`SKILL.md`](SKILL.md) 與 `references/` 目錄下的三份必讀參考文件：
+想深入了解技術細節，可參閱 [`skills/antigravity-cli-statusline.md`](skills/antigravity-cli-statusline.md) 與 `references/` 目錄下的三份必讀參考文件：
 
 - [`references/windows.md`](references/windows.md) — Windows 特定規範（UTF-8 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide`、`Get-CimInstance`）
 - [`references/config-files.md`](references/config-files.md) — 三層設定檔結構、`statusLine` 物件、`trusted_hooks.json` 信任機制
