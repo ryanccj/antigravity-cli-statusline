@@ -74,6 +74,27 @@ agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 
 Once installed, you can launch the setup by running `/antigravity-cli-statusline` in your Antigravity CLI prompt.
 
+### Workspace-Level Install (Single-File, Skill-Only)
+
+If you want this skill only inside one workspace (without registering it as a global plugin), copy just the skill file:
+
+```bash
+mkdir -p .agents/skills
+curl -fsSL https://raw.githubusercontent.com/andyawd/antigravity-cli-statusline/main/skills/antigravity-cli-statusline.md \
+  -o .agents/skills/antigravity-cli-statusline.md
+```
+
+The skill becomes available as `/antigravity-cli-statusline` only inside this workspace. Note: hook scripts (`scripts/*.mjs`) and references (`references/*.md`) are NOT bundled with single-file install — if you need them, install the full plugin globally as well.
+
+### Managing the Plugin
+
+```bash
+agy plugin list                                  # List installed plugins
+agy plugin disable antigravity-cli-statusline    # Temporarily disable
+agy plugin enable  antigravity-cli-statusline    # Re-enable
+agy plugin uninstall antigravity-cli-statusline  # Remove
+```
+
 ## Contributing
 
 We welcome contributions! For details on how to submit Pull Requests, report bugs, or add new language translations via AI, please see our **[Contributing Guide (CONTRIBUTING.md)](CONTRIBUTING.md)**.
@@ -88,7 +109,7 @@ For deeper technical details, see [`skills/antigravity-cli-statusline.md`](skill
 
 ### Diagnosing a Suddenly-Disappeared Statusline
 
-If your statusline suddenly vanishes (especially after running `agy` commands like `/statusline` or `/model`), run the read-only diagnostic script from the skill directory and paste its full output to your AI agent for repair guidance:
+If your statusline suddenly vanishes (especially after running `agy` commands like `/statusline` or `/model`), run the read-only diagnostic script from the plugin root directory and paste its full output to your AI agent for repair guidance:
 
 ```bash
 node scripts/diagnose-statusline.mjs

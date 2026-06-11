@@ -31,6 +31,16 @@ Since this project dynamically handles languages within single files, please DO 
 
 We welcome contributions! If you have ideas for new features, bug fixes, or improvements, feel free to open an issue or submit a Pull Request. Whether it's adding a new status indicator, improving cross-platform compatibility, or fixing a typo, your help is greatly appreciated.
 
+### FAQ: `.gemini/` vs `.agents/`
+
+These two directories serve completely different roles — do NOT rename `.gemini/` to `.agents/`:
+
+| Directory | Role | When to use |
+|---|---|---|
+| `.gemini/settings.json` | agy CLI **runtime settings** (workspace layer) | The CLI itself reads this to apply `statusLine`, `ui.language`, `ui.footer.items` for the current project. |
+| `.agents/skills/<name>.md` | Workspace-level **skill customization** | Override or add a skill description that only applies to this workspace. |
+| `.agents/mcp_config.json` | Workspace-level **MCP server config** | Project-specific MCP connections. |
+
 ---
 
 ## 繁體中文 (zh-tw)
@@ -59,3 +69,13 @@ We welcome contributions! If you have ideas for new features, bug fixes, or impr
 ### 🤝 貢獻指南
 
 非常歡迎大家提交 PR（Pull Request）來參與貢獻！如果你對這個專案有任何新功能的想法、發現 Bug，或是想要最佳化程式碼，都歡迎隨時發起 PR 或建立 Issue。不論是新增更多的狀態列指標、改善跨平台相容性（Compatibility），或是修正錯字，都非常期待你的加入！
+
+### FAQ：`.gemini/` 與 `.agents/` 的差別
+
+兩者角色完全不同，請**不要**將 `.gemini/` 改名為 `.agents/`：
+
+| 目錄 | 角色 | 何時用 |
+|---|---|---|
+| `.gemini/settings.json` | agy CLI **runtime 設定**（專案層） | CLI 自身讀取，用以套用當下專案的 `statusLine`、`ui.language`、`ui.footer.items`。 |
+| `.agents/skills/<name>.md` | 工作區層級 **skill 客製化** | 在單一工作區覆寫或新增 skill 描述。 |
+| `.agents/mcp_config.json` | 工作區層級 **MCP 伺服器設定** | 該專案專屬的 MCP 連線設定。 |

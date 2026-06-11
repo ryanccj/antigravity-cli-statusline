@@ -161,7 +161,7 @@ agy CLI 的 `statusline_runner.go` 底層強制依賴 `sh -c` 執行指令。Win
 
 3. **讀取 sh_hidden.cs 原始碼**：
    - 優先讀取當前工作區根目錄下 `scripts/sh_hidden.cs`
-   - 若不存在或在其他工作區，退回從本技能目錄 `scripts/sh_hidden.cs` 讀取
+   - 若不存在或在其他工作區，退回從本外掛根目錄 `scripts/sh_hidden.cs` 讀取
    - 將其複製或寫入到暫存資料夾
 
 4. **動態尋找 csc.exe 並編譯**：

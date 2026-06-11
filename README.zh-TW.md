@@ -74,6 +74,27 @@ agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 
 安裝完成後，在 Antigravity CLI 提示字元中輸入 `/antigravity-cli-statusline` 即可啟動本技能進行狀態列設定。
 
+### 工作區層級安裝（單檔 Skill）
+
+若你只想在單一工作區啟用本技能（不註冊為全域外掛），可直接複製單一 .md 檔案：
+
+```bash
+mkdir -p .agents/skills
+curl -fsSL https://raw.githubusercontent.com/andyawd/antigravity-cli-statusline/main/skills/antigravity-cli-statusline.md \
+  -o .agents/skills/antigravity-cli-statusline.md
+```
+
+技能於該工作區內仍以 `/antigravity-cli-statusline` 觸發。注意：scripts/ 與 references/ 不會隨單檔安裝，若需完整功能請另行以全域方式安裝外掛。
+
+### 外掛管理指令
+
+```bash
+agy plugin list                                  # 列出已安裝外掛
+agy plugin disable antigravity-cli-statusline    # 暫時停用
+agy plugin enable  antigravity-cli-statusline    # 重新啟用
+agy plugin uninstall antigravity-cli-statusline  # 完全移除
+```
+
 ## 貢獻指南 (Contributing)
 
 非常歡迎大家參與貢獻！關於如何提交 PR（Pull Request）、發現 Bug，或是透過 AI 一鍵新增其他語言翻譯，請參閱我們的 **[貢獻指南 (CONTRIBUTING.md)](CONTRIBUTING.md)**。
@@ -88,7 +109,7 @@ agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 
 ### 狀態列突然消失的故障診斷
 
-若狀態列在 `agy` 中突然消失（特別是執行 `/statusline`、`/model` 等指令切換之後），請於本技能目錄執行以下唯讀診斷腳本，並將完整輸出貼給 AI 代理協助修復：
+若狀態列在 `agy` 中突然消失（特別是執行 `/statusline`、`/model` 等指令切換之後），請於本外掛根目錄執行以下唯讀診斷腳本，並將完整輸出貼給 AI 代理協助修復：
 
 ```bash
 node scripts/diagnose-statusline.mjs
