@@ -1,6 +1,6 @@
 ---
 name: antigravity-cli-statusline
-description: 本技能用於設定 Antigravity CLI（agy）的狀態列（Statusline / Footer）顯示指標、顯示順序與多語系介面（繁體中文 zh-tw / English us / 日本語 jp），並自動部署跨平台 Node.js Hook 腳本（statusline-quota.mjs、fetch-local-quota.mjs）至 ~/.gemini/antigravity-cli/hooks/，同步註冊三層 settings.json（全域、CLI 專屬、專案）與 trusted_hooks.json 信任機制。適用情境：使用者要求設定 / 客製化 / 啟用 CLI 狀態列、調整 CLI 頁尾顯示項目、顯示 API 額度 / Token 用量 / Context 消耗 / Git 分支 / AI 模型名稱 / RAM 記憶體用量 / 訂閱方案等指標於 CLI 底部、切換狀態列語言、在新電腦上啟用此狀態列，或使用者主動以 /antigravity-cli-statusline 觸發本技能時。支援 macOS、Linux、Windows（含 Windows 10 / 11）跨平台環境，並於 Windows 上自動處理 sh.exe 缺失、UTF-8 BOM 污染、wmic 棄用等系統陷阱。
+description: 本技能用於設定 Antigravity CLI（agy）的狀態列（Statusline / Footer）顯示指標、顯示順序與多語系介面（繁體中文 zh-tw / English us / 日本語 jp），並自動部署跨平台 Node.js Hook 腳本（statusline-quota.mjs、fetch-local-quota.mjs）至 ~/.gemini/antigravity-cli/hooks/，同步註冊三層 settings.json（全域、CLI 專屬、專案）與 trusted_hooks.json 信任機制。適用情境：使用者要求設定 / 客製化 / 啟用 CLI 狀態列、調整 CLI 頁尾顯示項目、顯示 API 額度 / Token 用量 / Context 消耗 / Git 分支 / 工作區是否乾淨（dirty）/ VCS 類型 / AI 模型名稱 / 代理狀態（agent state）/ 待確認工具對話 / 輸入佇列 / 背景任務 / 子代理數 / 工件（artifacts）/ 沙盒模式 / CLI 版本 / 對話 ID / 代理設定檔（agent profile）/ RAM 記憶體用量 / 訂閱方案等指標於 CLI 底部、切換狀態列語言、在新電腦上啟用此狀態列，或使用者主動以 /antigravity-cli-statusline 觸發本技能時。支援 macOS、Linux、Windows（含 Windows 10 / 11）跨平台環境，並於 Windows 上自動處理 sh.exe 缺失、UTF-8 BOM 污染、wmic 棄用等系統陷阱。
 ---
 
 # Antigravity 狀態列設定技能
@@ -171,7 +171,19 @@ Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide
         "目前工作區專案完整路徑 (project-full-path)",
         "目前訂閱方案等級 (plan-tier)",
         "帳號電子郵件 (account-email)",
-        "AI 額度點數 (ai-credits)"
+        "AI 額度點數 (ai-credits)",
+        "代理當前狀態（idle / thinking / working / tool_use / initializing）(agent-state)",
+        "是否有待確認的工具對話框 (tool-confirmation)",
+        "佇列中待處理的使用者輸入數 (pending-input)",
+        "進行中的背景任務數 (background-tasks)",
+        "活躍子代理數 (subagents)",
+        "已產生的工件（artifacts）數 (artifacts)",
+        "工作區是否有未提交變更（dirty / clean）(vcs-dirty)",
+        "版本控制類型（git / jj / fig）(vcs-type)",
+        "沙盒模式狀態（off / on (net) / on (no-net)）(sandbox-status)",
+        "Antigravity CLI 版本號 (cli-version)",
+        "目前對話 ID（前 8 碼，用於除錯）(conversation-id)",
+        "活躍代理設定檔名稱 (agent-profile)"
       ],
       "is_multi_select": true
     }

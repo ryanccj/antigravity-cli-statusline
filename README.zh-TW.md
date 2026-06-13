@@ -36,6 +36,18 @@
   - 帳號等級 (Account Plan Tier)
   - 帳號信箱 (Account Email)
   - AI 點數 (AI Credits)
+  - 代理當前狀態 (Agent State：idle / thinking / working / tool_use / initializing)
+  - 是否有待確認的工具對話框 (Tool Confirmation)
+  - 佇列中待處理的使用者輸入數 (Pending Input)
+  - 進行中的背景任務數 (Background Tasks)
+  - 活躍子代理數 (Subagents)
+  - 已產生的工件數 (Artifacts)
+  - 工作區是否乾淨 (VCS Dirty)
+  - 版本控制類型 (VCS Type：git / jj / fig)
+  - 沙盒模式狀態 (Sandbox Status)
+  - Antigravity CLI 版本號 (CLI Version)
+  - 目前對話 ID（前 8 碼）(Conversation ID)
+  - 活躍代理設定檔名稱 (Agent Profile)
 - **自訂顯示排序與篩選**：透過互動式多階段問卷，自由選擇想要顯示的指標，並能手動決定它們的精確排列順序。
 - **熱更新 (Hot-Reload) 支援**：設定完成後，狀態列將立即套用最新設定，無需重新啟動 CLI。
 - **多國語言支援**：內建繁體中文、英文與日文，並提供讓 AI 一鍵擴充其他語系的動態架構，任何人都能輕鬆新增專屬的語言版本。

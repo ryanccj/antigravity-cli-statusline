@@ -36,6 +36,18 @@ This repository provides a Skill for setting up and customizing the Antigravity 
   - Account Plan Tier
   - Account Email
   - AI Credits
+  - Agent State (idle / thinking / working / tool_use / initializing)
+  - Pending Tool Confirmation Dialog
+  - Pending User Input Queue Count
+  - Running Background Tasks Count
+  - Active Subagents Count
+  - Produced Artifacts Count
+  - Working Tree Dirty Flag (clean / dirty)
+  - VCS Type (git / jj / fig)
+  - Sandbox Mode Status (off / on (net) / on (no-net))
+  - Antigravity CLI Version
+  - Conversation ID (first 8 chars)
+  - Active Agent Profile Name
 - **Customizable Display Order & Filtering**: Interactively select which indicators to display and customize their exact order through an intuitive, multi-stage setup wizard.
 - **Hot-Reload Support**: Changes to the statusline configuration are applied immediately, without requiring a CLI restart.
 - **Multi-language Support**: Natively supports Traditional Chinese, English, and Japanese. Features a dynamic architecture that allows you to easily add new languages using AI.

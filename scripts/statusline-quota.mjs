@@ -48,9 +48,37 @@ function getModelColor(name) {
   return "";
 }
 
+// agent_state 顏色：thinking / working / tool_use=黃、initializing=藍、idle=灰
+function getAgentStateColor(state) {
+  const s = (state || '').toLowerCase();
+  if (s === 'thinking' || s === 'working' || s === 'tool_use') return YELLOW;
+  if (s === 'initializing') return BLUE;
+  return GRAY;
+}
+
 // 清理 ANSI 碼以計算純文字長度
 function stripAnsi(str) {
   return str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+}
+
+function getGitDirty() {
+  try {
+    const opts = { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true };
+    let out = '';
+    try {
+      out = execSync('git status --porcelain', opts);
+    } catch (err) {
+      if (process.platform === 'win32') {
+        const gitPath = 'C:\\Program Files\\Git\\cmd\\git.exe';
+        if (existsSync(gitPath)) {
+          out = execSync(`"${gitPath}" status --porcelain`, opts);
+        }
+      }
+    }
+    return out.trim().length > 0;
+  } catch (e) {
+    return false;
+  }
 }
 
 function getCliMemoryMB() {
@@ -286,6 +314,64 @@ async function main() {
     const accountEmail = (cache && cache.email) ? cache.email : (meta?.account?.email || cachedAccount.email || unknownStr);
     const aiCredits = (cache && cache.aiCredits) ? cache.aiCredits : (meta?.account?.ai_credits || cachedAccount.aiCredits || (lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A')));
 
+    // === 新增 12 項指標的資料提取 ===
+    const agentState = meta?.agent_state || 'idle';
+    const agentStateColor = getAgentStateColor(agentState);
+
+    const toolConfirmPending = !!meta?.tool_confirmation_pending;
+    const toolConfirmColor = toolConfirmPending ? RED : GRAY;
+
+    const pendingInputCount = Number(meta?.pending_input_count) || 0;
+    const pendingInputColor = pendingInputCount > 0 ? YELLOW : GRAY;
+
+    const backgroundTasksCount = Array.isArray(meta?.background_tasks) ? meta.background_tasks.length : 0;
+    const backgroundTasksColor = backgroundTasksCount > 0 ? GREEN : GRAY;
+
+    const subagentsCount = Array.isArray(meta?.subagents) ? meta.subagents.length : 0;
+    const subagentsColor = subagentsCount > 0 ? GREEN : GRAY;
+
+    const artifactsCount = Array.isArray(meta?.artifacts) ? meta.artifacts.length : 0;
+    const artifactsColor = artifactsCount > 0 ? GREEN : GRAY;
+
+    let vcsDirtyFlag;
+    if (typeof meta?.vcs?.dirty === 'boolean') {
+      vcsDirtyFlag = meta.vcs.dirty;
+    } else {
+      vcsDirtyFlag = getGitDirty();
+    }
+    const vcsDirtyColor = vcsDirtyFlag ? YELLOW : GREEN;
+    const vcsDirtyGlyph = vcsDirtyFlag ? '✗' : '✓';
+    const vcsDirtyLabel = vcsDirtyFlag
+      ? (lang === 'zh-tw' ? '有變更' : (lang === 'jp' ? '変更あり' : 'dirty'))
+      : (lang === 'zh-tw' ? '乾淨' : (lang === 'jp' ? 'クリーン' : 'clean'));
+
+    const vcsType = meta?.vcs?.type || 'git';
+
+    const sandboxEnabled = !!meta?.sandbox?.enabled;
+    const sandboxAllowNet = !!meta?.sandbox?.allow_network;
+    let sandboxStatusVal;
+    let sandboxStatusColor;
+    if (!sandboxEnabled) {
+      sandboxStatusVal = lang === 'zh-tw' ? '關閉' : (lang === 'jp' ? 'オフ' : 'off');
+      sandboxStatusColor = GRAY;
+    } else if (sandboxAllowNet) {
+      sandboxStatusVal = lang === 'zh-tw' ? '啟用（聯網）' : (lang === 'jp' ? 'オン（ネット）' : 'on (net)');
+      sandboxStatusColor = YELLOW;
+    } else {
+      sandboxStatusVal = lang === 'zh-tw' ? '啟用（離線）' : (lang === 'jp' ? 'オン（オフライン）' : 'on (no-net)');
+      sandboxStatusColor = GREEN;
+    }
+
+    const cliVersion = meta?.version ? `v${meta.version}` : unknownStr;
+
+    const rawConvId = meta?.conversation_id || '';
+    const conversationIdShort = rawConvId ? rawConvId.replace(/-/g, '').slice(0, 8) : unknownStr;
+
+    let agentProfileName = unknownStr;
+    if (typeof meta?.agent === 'string') agentProfileName = meta.agent;
+    else if (meta?.agent?.name) agentProfileName = meta.agent.name;
+    else if (meta?.agent?.profile) agentProfileName = meta.agent.profile;
+
     const i18n = {
       'zh-tw': {
         'model-name': `模型: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
@@ -299,7 +385,19 @@ async function main() {
         'project-full-path': `專案路徑: ${BOLD}${projectFullPath}${RESET}`,
         'plan-tier': `帳號等級: ${BOLD}${planTier}${RESET}`,
         'account-email': `帳號: ${BOLD}${accountEmail}${RESET}`,
-        'ai-credits': `AI 點數: ${BOLD}${aiCredits}${RESET}`
+        'ai-credits': `AI 點數: ${BOLD}${aiCredits}${RESET}`,
+        'agent-state': `代理狀態: ${agentStateColor}${BOLD}${agentState}${RESET}`,
+        'tool-confirmation': `工具確認: ${toolConfirmColor}${toolConfirmPending ? '待確認' : '無'}${RESET}`,
+        'pending-input': `輸入佇列: ${pendingInputColor}${pendingInputCount}${RESET}`,
+        'background-tasks': `背景任務: ${backgroundTasksColor}${backgroundTasksCount}${RESET}`,
+        'subagents': `子代理: ${subagentsColor}${subagentsCount}${RESET}`,
+        'artifacts': `工件數: ${artifactsColor}${artifactsCount}${RESET}`,
+        'vcs-dirty': `工作區: ${vcsDirtyColor}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
+        'vcs-type': `版控類型: ${BOLD}${vcsType}${RESET}`,
+        'sandbox-status': `沙盒: ${sandboxStatusColor}${sandboxStatusVal}${RESET}`,
+        'cli-version': `CLI 版本: ${BOLD}${cliVersion}${RESET}`,
+        'conversation-id': `對話 ID: ${GRAY}${conversationIdShort}${RESET}`,
+        'agent-profile': `代理設定檔: ${BOLD}${agentProfileName}${RESET}`
       },
       'us': {
         'model-name': `Model: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
@@ -313,7 +411,19 @@ async function main() {
         'project-full-path': `Project Path: ${BOLD}${projectFullPath}${RESET}`,
         'plan-tier': `Plan: ${BOLD}${planTier}${RESET}`,
         'account-email': `Account: ${BOLD}${accountEmail}${RESET}`,
-        'ai-credits': `AI Credits: ${BOLD}${aiCredits}${RESET}`
+        'ai-credits': `AI Credits: ${BOLD}${aiCredits}${RESET}`,
+        'agent-state': `Agent: ${agentStateColor}${BOLD}${agentState}${RESET}`,
+        'tool-confirmation': `Confirm: ${toolConfirmColor}${toolConfirmPending ? 'pending' : 'none'}${RESET}`,
+        'pending-input': `Queue: ${pendingInputColor}${pendingInputCount}${RESET}`,
+        'background-tasks': `BG: ${backgroundTasksColor}${backgroundTasksCount}${RESET}`,
+        'subagents': `Subagents: ${subagentsColor}${subagentsCount}${RESET}`,
+        'artifacts': `Artifacts: ${artifactsColor}${artifactsCount}${RESET}`,
+        'vcs-dirty': `Status: ${vcsDirtyColor}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
+        'vcs-type': `VCS: ${BOLD}${vcsType}${RESET}`,
+        'sandbox-status': `Sandbox: ${sandboxStatusColor}${sandboxStatusVal}${RESET}`,
+        'cli-version': `CLI: ${BOLD}${cliVersion}${RESET}`,
+        'conversation-id': `Conv: ${GRAY}${conversationIdShort}${RESET}`,
+        'agent-profile': `Profile: ${BOLD}${agentProfileName}${RESET}`
       },
       'jp': {
         'model-name': `モデル: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
@@ -327,7 +437,19 @@ async function main() {
         'project-full-path': `プロジェクトパス: ${BOLD}${projectFullPath}${RESET}`,
         'plan-tier': `プラン: ${BOLD}${planTier}${RESET}`,
         'account-email': `アカウント: ${BOLD}${accountEmail}${RESET}`,
-        'ai-credits': `AI クレジット: ${BOLD}${aiCredits}${RESET}`
+        'ai-credits': `AI クレジット: ${BOLD}${aiCredits}${RESET}`,
+        'agent-state': `エージェント状態: ${agentStateColor}${BOLD}${agentState}${RESET}`,
+        'tool-confirmation': `ツール確認: ${toolConfirmColor}${toolConfirmPending ? '保留中' : 'なし'}${RESET}`,
+        'pending-input': `入力キュー: ${pendingInputColor}${pendingInputCount}${RESET}`,
+        'background-tasks': `バックグラウンドタスク: ${backgroundTasksColor}${backgroundTasksCount}${RESET}`,
+        'subagents': `サブエージェント: ${subagentsColor}${subagentsCount}${RESET}`,
+        'artifacts': `成果物: ${artifactsColor}${artifactsCount}${RESET}`,
+        'vcs-dirty': `作業領域: ${vcsDirtyColor}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
+        'vcs-type': `VCS種別: ${BOLD}${vcsType}${RESET}`,
+        'sandbox-status': `サンドボックス: ${sandboxStatusColor}${sandboxStatusVal}${RESET}`,
+        'cli-version': `CLIバージョン: ${BOLD}${cliVersion}${RESET}`,
+        'conversation-id': `会話 ID: ${GRAY}${conversationIdShort}${RESET}`,
+        'agent-profile': `エージェントプロファイル: ${BOLD}${agentProfileName}${RESET}`
       }
     };
 
