@@ -41,7 +41,7 @@ This repository provides a Skill for setting up and customizing the Antigravity 
   - Pending User Input Queue Count
   - Running Background Tasks Count
   - Active Subagents Count
-  - Produced Artifacts Count
+  - AI-Generated Files / Outputs This Session (Artifacts)
   - Working Tree Dirty Flag (clean / dirty)
   - VCS Type (git / jj / fig)
   - Sandbox Mode Status (off / on (net) / on (no-net))

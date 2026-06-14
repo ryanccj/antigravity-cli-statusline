@@ -177,7 +177,7 @@ Windows 平台的 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide
         "佇列中待處理的使用者輸入數 (pending-input)",
         "進行中的背景任務數 (background-tasks)",
         "活躍子代理數 (subagents)",
-        "已產生的工件（artifacts）數 (artifacts)",
+        "本次對話 AI 累計產出的成品 / 檔案數 (artifacts)",
         "工作區是否有未提交變更（dirty / clean）(vcs-dirty)",
         "版本控制類型（git / jj / fig）(vcs-type)",
         "沙盒模式狀態（off / on (net) / on (no-net)）(sandbox-status)",

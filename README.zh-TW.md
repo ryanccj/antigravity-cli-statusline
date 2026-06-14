@@ -41,7 +41,7 @@
   - 佇列中待處理的使用者輸入數 (Pending Input)
   - 進行中的背景任務數 (Background Tasks)
   - 活躍子代理數 (Subagents)
-  - 已產生的工件數 (Artifacts)
+  - 本次對話 AI 累計產出的成品 / 檔案數 (Artifacts)
   - 工作區是否乾淨 (VCS Dirty)
   - 版本控制類型 (VCS Type：git / jj / fig)
   - 沙盒模式狀態 (Sandbox Status)
