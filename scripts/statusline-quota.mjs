@@ -39,6 +39,14 @@ function getColorByPercentage(pct) {
   return RED;
 }
 
+// 計數型四階段（越多越警示）：0=藍、1-2=綠、3-4=黃、5+=紅
+function getColorByCount(n) {
+  if (n === 0) return BLUE;
+  if (n <= 2) return GREEN;
+  if (n <= 4) return YELLOW;
+  return RED;
+}
+
 // 根據模型家族取得色彩 (Claude: #dd5013, Gemini: #4796e3, GPT: #74aa9c)
 function getModelColor(name) {
   const lower = (name || '').toLowerCase();
@@ -46,14 +54,6 @@ function getModelColor(name) {
   if (lower.includes('gemini')) return "\x1b[38;2;71;150;227m";
   if (lower.includes('gpt') || lower.includes('chatgpt')) return "\x1b[38;2;116;170;156m";
   return "";
-}
-
-// agent_state 顏色：thinking / working / tool_use=黃、initializing=藍、idle=灰
-function getAgentStateColor(state) {
-  const s = (state || '').toLowerCase();
-  if (s === 'thinking' || s === 'working' || s === 'tool_use') return YELLOW;
-  if (s === 'initializing') return BLUE;
-  return GRAY;
 }
 
 // 清理 ANSI 碼以計算純文字長度
@@ -316,22 +316,16 @@ async function main() {
 
     // === 新增 12 項指標的資料提取 ===
     const agentState = meta?.agent_state || 'idle';
-    const agentStateColor = getAgentStateColor(agentState);
 
     const toolConfirmPending = !!meta?.tool_confirmation_pending;
-    const toolConfirmColor = toolConfirmPending ? RED : GRAY;
 
     const pendingInputCount = Number(meta?.pending_input_count) || 0;
-    const pendingInputColor = pendingInputCount > 0 ? YELLOW : GRAY;
 
     const backgroundTasksCount = Array.isArray(meta?.background_tasks) ? meta.background_tasks.length : 0;
-    const backgroundTasksColor = backgroundTasksCount > 0 ? GREEN : GRAY;
 
     const subagentsCount = Array.isArray(meta?.subagents) ? meta.subagents.length : 0;
-    const subagentsColor = subagentsCount > 0 ? GREEN : GRAY;
 
     const artifactsCount = Array.isArray(meta?.artifacts) ? meta.artifacts.length : 0;
-    const artifactsColor = artifactsCount > 0 ? GREEN : GRAY;
 
     let vcsDirtyFlag;
     if (typeof meta?.vcs?.dirty === 'boolean') {
@@ -339,7 +333,6 @@ async function main() {
     } else {
       vcsDirtyFlag = getGitDirty();
     }
-    const vcsDirtyColor = vcsDirtyFlag ? YELLOW : GREEN;
     const vcsDirtyGlyph = vcsDirtyFlag ? '✗' : '✓';
     const vcsDirtyLabel = vcsDirtyFlag
       ? (lang === 'zh-tw' ? '有變更' : (lang === 'jp' ? '変更あり' : 'dirty'))
@@ -350,16 +343,12 @@ async function main() {
     const sandboxEnabled = !!meta?.sandbox?.enabled;
     const sandboxAllowNet = !!meta?.sandbox?.allow_network;
     let sandboxStatusVal;
-    let sandboxStatusColor;
     if (!sandboxEnabled) {
       sandboxStatusVal = lang === 'zh-tw' ? '關閉' : (lang === 'jp' ? 'オフ' : 'off');
-      sandboxStatusColor = GRAY;
     } else if (sandboxAllowNet) {
       sandboxStatusVal = lang === 'zh-tw' ? '啟用（聯網）' : (lang === 'jp' ? 'オン（ネット）' : 'on (net)');
-      sandboxStatusColor = YELLOW;
     } else {
       sandboxStatusVal = lang === 'zh-tw' ? '啟用（離線）' : (lang === 'jp' ? 'オン（オフライン）' : 'on (no-net)');
-      sandboxStatusColor = GREEN;
     }
 
     const cliVersion = meta?.version ? `v${meta.version}` : unknownStr;
@@ -367,9 +356,12 @@ async function main() {
     const rawConvId = meta?.conversation_id || '';
     const conversationIdShort = rawConvId ? rawConvId.replace(/-/g, '').slice(0, 8) : unknownStr;
 
-    let agentProfileName = unknownStr;
+    const defaultAgentStr = lang === 'zh-tw' ? '預設' : (lang === 'jp' ? 'デフォルト' : 'Default');
+    let agentProfileName = defaultAgentStr;
     if (typeof meta?.agent === 'string') agentProfileName = meta.agent;
+    else if (meta?.agent?.display_name) agentProfileName = meta.agent.display_name;
     else if (meta?.agent?.name) agentProfileName = meta.agent.name;
+    else if (meta?.agent?.id) agentProfileName = meta.agent.id;
     else if (meta?.agent?.profile) agentProfileName = meta.agent.profile;
 
     const i18n = {
@@ -386,18 +378,18 @@ async function main() {
         'plan-tier': `帳號等級: ${BOLD}${planTier}${RESET}`,
         'account-email': `帳號: ${BOLD}${accountEmail}${RESET}`,
         'ai-credits': `AI 點數: ${BOLD}${aiCredits}${RESET}`,
-        'agent-state': `代理狀態: ${agentStateColor}${BOLD}${agentState}${RESET}`,
-        'tool-confirmation': `工具確認: ${toolConfirmColor}${toolConfirmPending ? '待確認' : '無'}${RESET}`,
-        'pending-input': `輸入佇列: ${pendingInputColor}${pendingInputCount}${RESET}`,
-        'background-tasks': `背景任務: ${backgroundTasksColor}${backgroundTasksCount}${RESET}`,
-        'subagents': `子代理: ${subagentsColor}${subagentsCount}${RESET}`,
-        'artifacts': `工件數: ${artifactsColor}${artifactsCount}${RESET}`,
-        'vcs-dirty': `工作區: ${vcsDirtyColor}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
+        'agent-state': `代理狀態: ${BOLD}${agentState}${RESET}`,
+        'tool-confirmation': `等你回應: ${BOLD}${toolConfirmPending ? '有' : '無'}${RESET}`,
+        'pending-input': `輸入佇列: ${getColorByCount(pendingInputCount)}${pendingInputCount}${RESET}`,
+        'background-tasks': `背景任務: ${getColorByCount(backgroundTasksCount)}${backgroundTasksCount}${RESET}`,
+        'subagents': `子代理: ${getColorByCount(subagentsCount)}${subagentsCount}${RESET}`,
+        'artifacts': `工件數: ${getColorByCount(artifactsCount)}${artifactsCount}${RESET}`,
+        'vcs-dirty': `工作區: ${BOLD}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
         'vcs-type': `版控類型: ${BOLD}${vcsType}${RESET}`,
-        'sandbox-status': `沙盒: ${sandboxStatusColor}${sandboxStatusVal}${RESET}`,
+        'sandbox-status': `沙盒: ${BOLD}${sandboxStatusVal}${RESET}`,
         'cli-version': `CLI 版本: ${BOLD}${cliVersion}${RESET}`,
-        'conversation-id': `對話 ID: ${GRAY}${conversationIdShort}${RESET}`,
-        'agent-profile': `代理設定檔: ${BOLD}${agentProfileName}${RESET}`
+        'conversation-id': `對話 ID: ${BOLD}${conversationIdShort}${RESET}`,
+        'agent-profile': `使用中代理: ${BOLD}${agentProfileName}${RESET}`
       },
       'us': {
         'model-name': `Model: ${getModelColor(fallbackModel)}${BOLD}${fallbackModel}${RESET}`,
@@ -412,17 +404,17 @@ async function main() {
         'plan-tier': `Plan: ${BOLD}${planTier}${RESET}`,
         'account-email': `Account: ${BOLD}${accountEmail}${RESET}`,
         'ai-credits': `AI Credits: ${BOLD}${aiCredits}${RESET}`,
-        'agent-state': `Agent: ${agentStateColor}${BOLD}${agentState}${RESET}`,
-        'tool-confirmation': `Confirm: ${toolConfirmColor}${toolConfirmPending ? 'pending' : 'none'}${RESET}`,
-        'pending-input': `Queue: ${pendingInputColor}${pendingInputCount}${RESET}`,
-        'background-tasks': `BG: ${backgroundTasksColor}${backgroundTasksCount}${RESET}`,
-        'subagents': `Subagents: ${subagentsColor}${subagentsCount}${RESET}`,
-        'artifacts': `Artifacts: ${artifactsColor}${artifactsCount}${RESET}`,
-        'vcs-dirty': `Status: ${vcsDirtyColor}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
+        'agent-state': `Agent: ${BOLD}${agentState}${RESET}`,
+        'tool-confirmation': `Confirm: ${BOLD}${toolConfirmPending ? 'pending' : 'none'}${RESET}`,
+        'pending-input': `Queue: ${getColorByCount(pendingInputCount)}${pendingInputCount}${RESET}`,
+        'background-tasks': `BG: ${getColorByCount(backgroundTasksCount)}${backgroundTasksCount}${RESET}`,
+        'subagents': `Subagents: ${getColorByCount(subagentsCount)}${subagentsCount}${RESET}`,
+        'artifacts': `Artifacts: ${getColorByCount(artifactsCount)}${artifactsCount}${RESET}`,
+        'vcs-dirty': `Status: ${BOLD}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
         'vcs-type': `VCS: ${BOLD}${vcsType}${RESET}`,
-        'sandbox-status': `Sandbox: ${sandboxStatusColor}${sandboxStatusVal}${RESET}`,
+        'sandbox-status': `Sandbox: ${BOLD}${sandboxStatusVal}${RESET}`,
         'cli-version': `CLI: ${BOLD}${cliVersion}${RESET}`,
-        'conversation-id': `Conv: ${GRAY}${conversationIdShort}${RESET}`,
+        'conversation-id': `Conv: ${BOLD}${conversationIdShort}${RESET}`,
         'agent-profile': `Profile: ${BOLD}${agentProfileName}${RESET}`
       },
       'jp': {
@@ -438,17 +430,17 @@ async function main() {
         'plan-tier': `プラン: ${BOLD}${planTier}${RESET}`,
         'account-email': `アカウント: ${BOLD}${accountEmail}${RESET}`,
         'ai-credits': `AI クレジット: ${BOLD}${aiCredits}${RESET}`,
-        'agent-state': `エージェント状態: ${agentStateColor}${BOLD}${agentState}${RESET}`,
-        'tool-confirmation': `ツール確認: ${toolConfirmColor}${toolConfirmPending ? '保留中' : 'なし'}${RESET}`,
-        'pending-input': `入力キュー: ${pendingInputColor}${pendingInputCount}${RESET}`,
-        'background-tasks': `バックグラウンドタスク: ${backgroundTasksColor}${backgroundTasksCount}${RESET}`,
-        'subagents': `サブエージェント: ${subagentsColor}${subagentsCount}${RESET}`,
-        'artifacts': `成果物: ${artifactsColor}${artifactsCount}${RESET}`,
-        'vcs-dirty': `作業領域: ${vcsDirtyColor}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
+        'agent-state': `エージェント状態: ${BOLD}${agentState}${RESET}`,
+        'tool-confirmation': `ツール確認: ${BOLD}${toolConfirmPending ? '保留中' : 'なし'}${RESET}`,
+        'pending-input': `入力キュー: ${getColorByCount(pendingInputCount)}${pendingInputCount}${RESET}`,
+        'background-tasks': `バックグラウンドタスク: ${getColorByCount(backgroundTasksCount)}${backgroundTasksCount}${RESET}`,
+        'subagents': `サブエージェント: ${getColorByCount(subagentsCount)}${subagentsCount}${RESET}`,
+        'artifacts': `成果物: ${getColorByCount(artifactsCount)}${artifactsCount}${RESET}`,
+        'vcs-dirty': `作業領域: ${BOLD}${vcsDirtyGlyph} ${vcsDirtyLabel}${RESET}`,
         'vcs-type': `VCS種別: ${BOLD}${vcsType}${RESET}`,
-        'sandbox-status': `サンドボックス: ${sandboxStatusColor}${sandboxStatusVal}${RESET}`,
+        'sandbox-status': `サンドボックス: ${BOLD}${sandboxStatusVal}${RESET}`,
         'cli-version': `CLIバージョン: ${BOLD}${cliVersion}${RESET}`,
-        'conversation-id': `会話 ID: ${GRAY}${conversationIdShort}${RESET}`,
+        'conversation-id': `会話 ID: ${BOLD}${conversationIdShort}${RESET}`,
         'agent-profile': `エージェントプロファイル: ${BOLD}${agentProfileName}${RESET}`
       }
     };
