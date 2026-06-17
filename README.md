@@ -1,14 +1,14 @@
 # Antigravity CLI Statusline Skill
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](skills/antigravity-cli-statusline.md)
+[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](skills/antigravity-cli-statusline.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
 [繁體中文](README.zh-TW.md) | English
 
-This repository provides a Skill for setting up and customizing the Antigravity CLI Statusline (Footer), including display items and localization settings. It is designed to work across multiple platforms and handles configuration efficiently.
+A multilingual, cross-platform skill that customizes the Antigravity CLI statusline (footer) — pick exactly which indicators to show, in any order you like, with smart line wrapping out of the box.
 
-## Screenshot
+## Screenshots
 
 ### Windows
 
@@ -22,112 +22,102 @@ This repository provides a Skill for setting up and customizing the Antigravity 
 | :---: | :---: | :---: |
 | ![English](docs/images/agy-cli-statusline-macos-us.png) | ![Traditional Chinese](docs/images/agy-cli-statusline-macos-zhtw.png) | ![Japanese](docs/images/agy-cli-statusline-macos-jp.png) |
 
-## Features
+## Installation
 
-- **Rich Status Indicators**: Choose from a variety of display items, including:
-  - Current AI Model Name
-  - Account API Available Quota
-  - API Reset Countdown
-  - Context Window Usage Percentage
-  - Session Token Count
-  - CLI RAM Usage
-  - Current Git Branch
-  - Project Path (Short / Full)
-  - Account Plan Tier
-  - Account Email
-  - AI Credits
-  - Agent State (idle / thinking / working / tool_use / initializing)
-  - Pending Tool Confirmation Dialog
-  - Pending User Input Queue Count
-  - Running Background Tasks Count
-  - Active Subagents Count
-  - AI-Generated Files / Outputs This Session (Artifacts)
-  - Working Tree Dirty Flag (clean / dirty)
-  - VCS Type (git / jj / fig)
-  - Sandbox Mode Status (off / on (net) / on (no-net))
-  - Antigravity CLI Version
-  - Conversation ID (first 8 chars)
-  - Active Agent Profile Name
-- **Customizable Display Order & Filtering**: Interactively select which indicators to display and customize their exact order through an intuitive, multi-stage setup wizard.
-- **Hot-Reload Support**: Changes to the statusline configuration are applied immediately, without requiring a CLI restart.
-- **Multi-language Support**: Natively supports Traditional Chinese, English, and Japanese. Features a dynamic architecture that allows you to easily add new languages using AI.
-- **Node.js Environment Pre-Check**: Before writing any configuration, the skill detects whether Node.js is installed. If missing, it emits a clear warning in your selected language (zh-tw / us / jp) — preventing the silent failure pattern where `agy` logs `statusline: command failed: exit status 127` 30 times and auto-disables the statusline — and lets you decide whether to abort and install Node.js first or continue setup and have the configuration take effect later.
-- **Three-Layer Settings Synchronization**: Dynamically parses and writes `~/.gemini/settings.json` (global), `~/.gemini/antigravity-cli/settings.json` (CLI-specific, **highest priority**), and `<workspace>/.gemini/settings.json` (project) in lock-step. Missing the CLI-specific layer silently overrides your global settings — the skill handles this for you.
-- **Python-Free Cross-Platform Architecture**: Completely removes Python dependencies. Uses native commands (`ps`, `lsof`) for macOS/Linux. For Windows 10 / 11, the skill:
-  - Uses `Get-CimInstance Win32_Process` to replace the deprecated `wmic` (removed in Windows 11).
-  - Automatically compiles a window-less `sh.exe` bridge (`/target:winexe`) via the built-in `csc.exe` and deploys it to the `agy` CLI bin directory, eliminating the black-box flicker caused by missing `sh.exe`.
-  - Performs UTF-8 BOM pre-checks on every settings file and verifies the first three bytes after every write to avoid Go-side JSON parsing crashes (`invalid character 'ï' looking for beginning of value`).
-  - Ensures accurate memory tracking for the `agy.exe` process even when Git is not in PATH.
-- **Smart Line Wrapping**: Automatically wraps the statusline to a new line if it exceeds the terminal width.
-- **Dynamic Visual Color Feedback**: Provides intuitive ANSI color coding — a 24-bit truecolor four-tier palette (Blue `#57caff` → Green `#5cdb6d` → Yellow `#ffd427` → Pink `#ff7daf`) based on API quota or context usage, and unique brand colors automatically applied to different AI model families.
+### Prerequisites
 
-## Prerequisites
+- **Node.js** (required) — the renderer scripts are pure `.mjs`. Without Node.js the statusline stays blank and `agy` will auto-disable it after repeated failures. The skill pre-checks this for you.
+- **Git** (optional) — needed for `git-branch`, `vcs-dirty`, and `vcs-type` indicators.
 
-- **Node.js**: This skill is implemented in pure Node.js (`.mjs`). Your system must have Node.js installed, and the `node` command must be available in your terminal. If Node.js is missing, the skill will warn you in your selected language and let you choose whether to abort and install it first, or continue (the configuration will be written and take effect once Node.js is installed later).
-- **Git** *(Optional)*: The statusline reads the Git branch of the current project. If you want this feature to work, it's recommended to have Git installed on your system.
+### Step A — Install the plugin
 
-## Getting Started
-
-> [!IMPORTANT]
-> **macOS Users:** There is currently a known bug in the Antigravity CLI where remote GitHub installations (`agy plugin install https://...`) fail with `unsupported extension format` due to symlink resolution issues with macOS's `/var` directory. If you encounter this error, please use the local installation method instead.
-
-To install this plugin, you can either use the remote installation (for Linux/Windows) or the local installation method (required for macOS):
-
-**Method 1: Local Installation (Recommended for macOS)**
-```bash
-git clone https://github.com/andyawd/antigravity-cli-statusline.git /tmp/statusline-plugin
-agy plugin install /tmp/statusline-plugin
-```
-
-**Method 2: Remote Installation**
 ```bash
 agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 ```
 
-Once installed, you can launch the setup by running `/antigravity-cli-statusline` in your Antigravity CLI prompt.
+> The CLI stages the bundle at `~/.gemini/antigravity-cli/plugins/antigravity-cli-statusline/`.
 
-### Workspace-Level Install (Single-File, Skill-Only)
+### Step B — Trigger the skill to finish setup
 
-If you want this skill only inside one workspace (without registering it as a global plugin), copy just the skill file:
+In the Antigravity CLI prompt, type:
 
-```bash
-mkdir -p .agents/skills
-curl -fsSL https://raw.githubusercontent.com/andyawd/antigravity-cli-statusline/main/skills/antigravity-cli-statusline.md \
-  -o .agents/skills/antigravity-cli-statusline.md
+```text
+/antigravity-cli-statusline
 ```
 
-The skill becomes available as `/antigravity-cli-statusline` only inside this workspace. Note: hook scripts (`scripts/*.mjs`) and references (`references/*.md`) are NOT bundled with single-file install — if you need them, install the full plugin globally as well.
+The skill walks you through language selection, indicator picking, and sorting, then deploys the renderer scripts and writes the three-layer `settings.json`. The statusline updates **live without a CLI restart**.
 
-### Managing the Plugin
+## Indicators, Sorting & Line Wrapping
 
-```bash
-agy plugin list                                  # List installed plugins
-agy plugin disable antigravity-cli-statusline    # Temporarily disable
-agy plugin enable  antigravity-cli-statusline    # Re-enable
-agy plugin uninstall antigravity-cli-statusline  # Remove
+### Available Indicators
+
+**AI Model & Agent**
+- **Current AI model name (`model-name`)** — the model serving the current conversation
+- **Active agent profile (`agent-profile`)** — the loaded Agent Profile name
+- **Agent state (`agent-state`)** — `idle / thinking / working / tool_use / initializing`
+- **AI credits (`ai-credits`)** — remaining account AI credits
+
+**Quota & Tokens**
+- **Account API available quota (`quota`)** — percentage, color-coded across four tiers
+- **API reset countdown (`quota-reset-countdown`)** — time remaining until quota refreshes
+- **Context window usage (`context-used`)** — percentage of context consumed
+- **Session token count (`token-count`)** — precise token usage this session
+- **Cumulative AI artifacts (`artifacts`)** — files/outputs produced this session
+- **Account plan tier (`plan-tier`)** — current subscription level
+
+**Interactive State**
+- **Pending tool confirmation (`tool-confirmation`)** — a tool dialog is waiting on you
+- **Pending user input queue (`pending-input`)** — queued inputs waiting to run
+- **Running background tasks (`background-tasks`)** — active background task count
+- **Active subagents (`subagents`)** — running subagent count
+
+**Project & VCS**
+- **Project short path (`project-path`)** — current workspace basename
+- **Project full path (`project-full-path`)** — absolute workspace path
+- **VCS type (`vcs-type`)** — `git / jj / fig`
+- **Current Git branch (`git-branch`)**
+- **Working tree status (`vcs-dirty`)** — `dirty / clean`
+
+**System & Account**
+- **CLI RAM usage (`memory-usage`)** — RSS memory consumed by the `agy` process
+- **Antigravity CLI version (`cli-version`)**
+- **Conversation ID (`conversation-id`)** — first 8 chars, for debugging
+- **Sandbox mode (`sandbox-status`)** — `off / on (net) / on (no-net)`
+- **Account email (`account-email`)**
+
+### Sorting
+
+In the skill's third stage (Step 4), enter a comma-separated list of numbers in the Write-in box to set the order:
+
+```text
+2,5,1
 ```
+
+- Numbers refer to the position in your Step 3 selection (1-based)
+- Identifiers like `quota` or `model-name` also work and can be mixed in, but numbers are the most direct
+- **Indicators you don't list are dropped** — the result is your final display set
+- Leave it blank or pick `(Recommended) Skip` to keep the original selection order with all indicators shown
+
+### Line Wrapping
+
+Two mechanisms work together:
+
+1. **Smart automatic wrapping** — the renderer reads the terminal width and wraps the next indicator to a new line when it would overflow. No setup required.
+2. **Manual newline** — insert the `n` token in your sort string to force a line break at that position. Reusable:
+
+```text
+1,2,n,3,4
+```
+
+(If you picked 4 indicators in Step 3, this puts items 1–2 on line one and forces 3–4 onto line two.)
+
+### Dynamic Colors
+
+A 24-bit truecolor four-tier palette (Blue → Green → Yellow → Pink) shifts with API quota and context usage; each AI model family also gets its own brand accent color.
 
 ## Contributing
 
-We welcome contributions! For details on how to submit Pull Requests, report bugs, or add new language translations via AI, please see our **[Contributing Guide (CONTRIBUTING.md)](CONTRIBUTING.md)**.
-
-## Troubleshooting & Advanced References
-
-For deeper technical details, see [`skills/antigravity-cli-statusline.md`](skills/antigravity-cli-statusline.md) and the three reference documents under `references/`:
-
-- [`references/windows.md`](references/windows.md) — Windows-specific rules (UTF-8 BOM, `sh.exe` bridge, `csc.exe` compilation, `windowsHide`, `Get-CimInstance`)
-- [`references/config-files.md`](references/config-files.md) — Three-layer settings file structure, `statusLine` object, `trusted_hooks.json` trust mechanism
-- [`references/pitfalls.md`](references/pitfalls.md) — Common pitfall lookup table
-
-### Diagnosing a Suddenly-Disappeared Statusline
-
-If your statusline suddenly vanishes (especially after running `agy` commands like `/statusline` or `/model`), run the read-only diagnostic script from the plugin root directory and paste its full output to your AI agent for repair guidance:
-
-```bash
-node scripts/diagnose-statusline.mjs
-```
-
-The script inspects all three settings files, `trusted_hooks.json`, Hook file existence, and — most importantly — whether the highest-priority CLI-specific layer's `statusLine.command` has been silently emptied.
+Contributions are welcome — including new indicators, cross-platform fixes, and AI-assisted language translations. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the workflow.
 
 ## Acknowledgements
 

@@ -22,9 +22,9 @@ Since this project dynamically handles languages within single files, please DO 
 - **Find Step 4 (步驟 4)**: Add a bullet point explaining the language format for your code (e.g., `* 若為 [LANG_CODE]，請使用[Target Language]說明配上英文識別碼。`).
 
 ### 2. Modify `scripts/statusline-quota.mjs`
-- **Find the `const i18n = {` dictionary**: Add a new `[LANG_CODE]` object inside it. Translate all 12 status indicators into [Target Language]. Look at the `zh-tw` or `us` examples and keep the ANSI color variables (like `${BOLD}`) exactly the same.
-- **Find the `getGitBranch(lang)` function**: Update **all** the hardcoded ternary operators (there are two places) to include the translation for "No VC" in [Target Language].
-- **Find the `countdownVal` variable**: Update the hardcoded ternary operator to include the translation for "N/A" or "None" in [Target Language].
+- **Find the `buildI18nDict(lang, m)` function**: Add a new `[LANG_CODE]` object inside the `dicts` map. Translate all 24 status indicators into [Target Language]. Look at the `zh-tw` or `us` examples and keep the ANSI color variables (like `${BOLD}`, `${WHITE}`, `${RESET}`) exactly the same.
+- **Find the `getGitBranch(lang)` function**: Update **all** the hardcoded ternary operators (there are two places — inside the `return` statement and inside the `catch` block) to include the translation for "No VC" in [Target Language].
+- **Find the `unknownStr` and `noneStr` variables**: Update the hardcoded ternary operators to include translations for "Unknown" and "N/A" / "None" in [Target Language]. These power fallback values for `countdownVal`, `accountEmail`, `aiCredits`, and a few other indicators.
 ````
 
 ### 🤝 Contributing
@@ -61,9 +61,9 @@ These two directories serve completely different roles — do NOT rename `.gemin
 - **尋找「步驟 4」**：在列舉說明格式的地方，補上你的語系（例如：`* 若為 [LANG_CODE]，請使用【目標語言】說明配上英文識別碼。`）。
 
 ### 2. 修改 `scripts/statusline-quota.mjs`
-- **尋找 `const i18n = {` 字典**：在裡面新增一個 `[LANG_CODE]` 的物件，並把裡面 12 個狀態列指標翻譯成【目標語言】。請參考 `zh-tw` 或 `us` 的格式，務必保留原有的 ANSI 色彩變數。
-- **尋找 `getGitBranch(lang)` 函式**：修改裡面**所有**寫死的三元運算子（共兩處），加上【目標語言】對於「無版本控制」的翻譯。
-- **尋找 `countdownVal` 變數**：修改後面的三元運算子，加上【目標語言】對於「無 / N/A」的翻譯。
+- **尋找 `buildI18nDict(lang, m)` 函式**：在 `dicts` 物件內新增一個 `[LANG_CODE]` 子物件，並把全部 24 個狀態列指標翻譯成【目標語言】。請參考 `zh-tw` 或 `us` 的範本，務必保留原有的 ANSI 色彩變數（如 `${BOLD}`、`${WHITE}`、`${RESET}`）。
+- **尋找 `getGitBranch(lang)` 函式**：修改裡面**所有**寫死的三元運算子（共兩處——一處在 `return` 句、另一處在 `catch` 區塊），加上【目標語言】對於「無版本控制」的翻譯。
+- **尋找 `unknownStr` 與 `noneStr` 兩個變數**：修改三元運算子，加上【目標語言】對於「未知」與「無 / N/A」的翻譯。這兩個變數會作為 `countdownVal`、`accountEmail`、`aiCredits` 等指標的 fallback 值。
 ````
 
 ### 🤝 貢獻指南
