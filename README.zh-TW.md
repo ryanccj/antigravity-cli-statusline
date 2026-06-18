@@ -1,14 +1,14 @@
 # Antigravity CLI 狀態列設定技能
 
-[![版本](https://img.shields.io/badge/版本-1.3.0-blue.svg)](skills/antigravity-cli-statusline.md)
+[![版本](https://img.shields.io/badge/版本-1.4.0-blue.svg)](skills/antigravity-cli-statusline.md)
 [![授權條款: MIT](https://img.shields.io/badge/授權條款-MIT-yellow.svg)](LICENSE)
 [![平台](https://img.shields.io/badge/平台-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
 繁體中文 | [English](README.md)
 
-本專案提供 Antigravity CLI 狀態列（Statusline / Footer）的客製化與語系設定技能，適用於多平台並確保在各種環境下都能維持高效與穩定的顯示。
+一個多語系、跨平台的技能，用來客製化 Antigravity CLI 狀態列（Footer）——精準勾選想顯示的指標、自由排序，並內建智慧型換行。
 
-## 實際畫面 (Screenshot)
+## 實際畫面
 
 ### Windows
 
@@ -22,79 +22,102 @@
 | :---: | :---: | :---: |
 | ![繁體中文](docs/images/agy-cli-statusline-macos-zhtw.png) | ![English](docs/images/agy-cli-statusline-macos-us.png) | ![日本語](docs/images/agy-cli-statusline-macos-jp.png) |
 
-## 功能特色
+## 安裝
 
-- **豐富的狀態列指標**：可自由選擇顯示以下資訊：
-  - 目前使用的 AI 模型名稱
-  - 帳號真實 API 可用額度 (Quota)
-  - API 重置時間倒數
-  - 目前對話已消耗的 Context 比例
-  - 目前 Session 消耗的精確 Token 數量
-  - CLI 行程所消耗的 RAM 記憶體量
-  - 目前工作區專案的 Git 分支
-  - 目前工作區專案路徑 (短路徑 / 完整路徑)
-  - 帳號等級 (Account Plan Tier)
-  - 帳號信箱 (Account Email)
-  - AI 點數 (AI Credits)
-- **自訂顯示排序與篩選**：透過互動式多階段問卷，自由選擇想要顯示的指標，並能手動決定它們的精確排列順序。
-- **熱更新 (Hot-Reload) 支援**：設定完成後，狀態列將立即套用最新設定，無需重新啟動 CLI。
-- **多國語言支援**：內建繁體中文、英文與日文，並提供讓 AI 一鍵擴充其他語系的動態架構，任何人都能輕鬆新增專屬的語言版本。
-- **Node.js 環境預檢**：在寫入任何設定檔之前，技能會主動偵測 Node.js 是否已安裝。若缺失，會用使用者所選語系（zh-tw / us / jp）發出明確警告——避免 `agy` 反覆記錄 `statusline: command failed: exit status 127`、連續失敗 30 次後自動停用狀態列的無聲故障——並讓使用者選擇先中斷去安裝 Node.js，或繼續設定（設定檔會正確寫入，待之後安裝 Node.js 並重新啟動 `agy` CLI 後狀態列即會自動生效）。
-- **三層設定檔同步寫入**：自動同步寫入 `~/.gemini/settings.json`（全域）、`~/.gemini/antigravity-cli/settings.json`（CLI 專屬，**最高優先級**）以及 `<workspace>/.gemini/settings.json`（專案層級）。若遺漏 CLI 專屬層，全域設定會被無聲覆蓋——本技能已自動處理這個盲點。
-- **無 Python 依賴的跨平台架構**：捨棄傳統的 Python 依賴。針對 macOS / Linux 使用原生指令（`ps`、`lsof`）；針對 Windows 10 / 11，技能會：
-  - 改用 `Get-CimInstance Win32_Process` 取代 Windows 11 已棄用並移除的 `wmic`。
-  - 自動透過內建 `csc.exe` 編譯無窗體（`/target:winexe`）的 `sh.exe` 橋接器並部署至 `agy` CLI bin 目錄，徹底消除 `sh.exe` 缺失導致的黑框閃爍。
-  - 對每份設定檔執行 UTF-8 BOM 預檢，並於寫入後驗證前 3 個位元組，避免 agy CLI（Go）JSON 解析崩潰（`invalid character 'ï' looking for beginning of value`）。
-  - 即使 Git 未設定環境變數，仍能準確抓取 `agy.exe` 行程的記憶體用量。
-- **智慧型換行**：自動偵測終端機寬度，避免狀態列內容超出畫面時發生顯示錯亂。
-- **動態視覺色彩回饋**：採用 24-bit truecolor 四階柔和配色（藍 `#57caff` → 綠 `#5cdb6d` → 黃 `#ffd427` → 粉紅 `#ff7daf`），依據 API 額度或 Context 消耗比例變色；也會根據目前使用的 AI 模型家族自動套用專屬的品牌識別色，提供極致直觀的終端機體驗。
+### 環境需求
 
-## 環境需求 (Prerequisites)
+- **Node.js**（必要）：渲染腳本以純 `.mjs` 撰寫；若缺失，狀態列會空白並被 `agy` 在反覆失敗後自動停用。技能會在寫入設定前先預檢。
+- **Git**（選用）：用於顯示 `git-branch`、`vcs-dirty`、`vcs-type` 指標。
 
-- **Node.js**：本技能腳本採用純 Node.js (`.mjs`) 實作，您的系統必須已安裝 Node.js 並且可以在終端機執行 `node` 指令。若 Node.js 未安裝，技能會以您所選的語系發出警告，讓您選擇先中斷去安裝，或繼續設定（設定檔會正確寫入，待安裝 Node.js 後狀態列即會自動生效）。
-- **Git** *(選用)*：狀態列中會讀取目前專案的 Git 分支。若需正常顯示，建議您的系統有安裝 Git（本專案已對 Windows 下未設定環境變數的情況提供了強化相容）。
+### 步驟 A：安裝外掛
 
-## 使用方式
-
-> [!IMPORTANT]
-> **macOS 用戶注意：** 目前 Antigravity CLI 存在一個已知的路徑解析 Bug，在 macOS 上直接透過網址安裝（`agy plugin install https://...`）會因為 `/var` 目錄的符號連結問題，導致報錯 `unsupported extension format`。若您遇到此錯誤，請務必改用下方的「本地安裝」方式。
-
-要安裝此外掛（Plugin），您可以選擇遠端安裝（適用於 Linux/Windows）或本地安裝（macOS 必用）：
-
-**方法一：本地安裝（macOS 推薦）**
-```bash
-git clone https://github.com/andyawd/antigravity-cli-statusline.git /tmp/statusline-plugin
-agy plugin install /tmp/statusline-plugin
-```
-
-**方法二：遠端安裝**
 ```bash
 agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 ```
 
-安裝完成後，在 Antigravity CLI 提示字元中輸入 `/antigravity-cli-statusline` 即可啟動本技能進行狀態列設定。
+> CLI 會把 bundle stage 至 `~/.gemini/antigravity-cli/plugins/antigravity-cli-statusline/`。
 
-## 貢獻指南 (Contributing)
+### 步驟 B：觸發 Skill 完成設定
 
-非常歡迎大家參與貢獻！關於如何提交 PR（Pull Request）、發現 Bug，或是透過 AI 一鍵新增其他語言翻譯，請參閱我們的 **[貢獻指南 (CONTRIBUTING.md)](CONTRIBUTING.md)**。
+在 Antigravity CLI 提示字元輸入：
 
-## 進階參考與故障排除
-
-想深入了解技術細節，可參閱 [`skills/antigravity-cli-statusline.md`](skills/antigravity-cli-statusline.md) 與 `references/` 目錄下的三份必讀參考文件：
-
-- [`references/windows.md`](references/windows.md) — Windows 特定規範（UTF-8 BOM 鐵則、`sh.exe` 越獄、`csc.exe` 編譯、`windowsHide`、`Get-CimInstance`）
-- [`references/config-files.md`](references/config-files.md) — 三層設定檔結構、`statusLine` 物件、`trusted_hooks.json` 信任機制
-- [`references/pitfalls.md`](references/pitfalls.md) — 常見陷阱對照表
-
-### 狀態列突然消失的故障診斷
-
-若狀態列在 `agy` 中突然消失（特別是執行 `/statusline`、`/model` 等指令切換之後），請於本技能目錄執行以下唯讀診斷腳本，並將完整輸出貼給 AI 代理協助修復：
-
-```bash
-node scripts/diagnose-statusline.mjs
+```text
+/antigravity-cli-statusline
 ```
 
-該腳本會檢查三層 `settings.json`、`trusted_hooks.json`、Hook 檔案存在性，以及**最關鍵**——CLI 專屬層 `statusLine.command` 是否被無聲清空。
+技能會引導你選擇語系、勾選指標、排序，並把渲染腳本部署到位、寫入三層 `settings.json`。狀態列**熱更新立即生效**，無需重啟 CLI。
+
+## 指標、排序與換行
+
+### 可顯示的指標
+
+**AI 模型與代理**
+- **目前使用的 AI 模型名稱（`model-name`）**：即時顯示對話正在使用的模型
+- **使用中代理（`agent-profile`）**：目前載入的 Agent Profile 名稱
+- **代理當前狀態（`agent-state`）**：`idle / thinking / working / tool_use / initializing`
+- **AI 額度點數（`ai-credits`）**：帳號剩餘的 AI Credits
+
+**額度與 Token**
+- **帳號真實 API 可用額度（`quota`）**：百分比，搭配四階配色
+- **API 重置時間倒數（`quota-reset-countdown`）**：距離下次額度重置剩餘時間
+- **目前對話已消耗的 Context 比例（`context-used`）**：百分比
+- **目前 Session 消耗的精確 Token 數量（`token-count`）**
+- **本次對話 AI 累計產出的成品 / 檔案數（`artifacts`）**
+- **目前訂閱方案等級（`plan-tier`）**
+
+**互動狀態**
+- **等你回應的工具確認對話框（`tool-confirmation`）**
+- **佇列中待處理的使用者輸入數（`pending-input`）**
+- **進行中的背景任務數（`background-tasks`）**
+- **活躍子代理數（`subagents`）**
+
+**專案與版控**
+- **目前工作區專案短路徑（`project-path`）**
+- **目前工作區專案完整路徑（`project-full-path`）**
+- **版本控制類型（`vcs-type`）**：`git / jj / fig`
+- **目前工作區的 Git 分支（`git-branch`）**
+- **工作區是否有未提交變更（`vcs-dirty`）**：`dirty / clean`
+
+**系統與帳號**
+- **CLI 行程所消耗的 RAM 記憶體量（`memory-usage`）**
+- **Antigravity CLI 版本號（`cli-version`）**
+- **目前對話 ID 前 8 碼（`conversation-id`）**：用於除錯
+- **沙盒模式狀態（`sandbox-status`）**：`off / on (net) / on (no-net)`
+- **帳號電子郵件（`account-email`）**
+
+### 排序
+
+在技能流程第三階段（步驟 4），於 Write-in 輸入框填入以逗號分隔的序號即可自訂排序：
+
+```text
+2,5,1
+```
+
+- 數字 = 步驟 3 勾選清單中的序號（從 1 起算）
+- 也可混用英文識別碼（如 `quota`、`model-name`），但用數字最直觀
+- **未提及的指標會被剔除**——排序結果即為最終顯示集合
+- 若留白或選擇 `(Recommended) 略過` 就會沿用勾選順序、顯示全部勾選的指標
+
+### 換行
+
+兩種機制並存：
+
+1. **自動智慧折行**：渲染腳本會讀取終端機寬度，當下一個指標會超出時自動折到下一行，無需任何設定。
+2. **強制換行**：在排序字串中插入 `n` token 即可在指定位置強制折行，可重複使用：
+
+```text
+1,2,n,3,4
+```
+
+（若步驟 3 勾選了 4 個指標，此例會把 1、2 顯示在第一行，並強制把 3、4 折到第二行。）
+
+### 動態色彩
+
+採用 24-bit truecolor 四階柔和配色（藍 → 綠 → 黃 → 粉紅），依 API 額度或 Context 消耗比例變色；不同 AI 模型家族也會套用專屬的品牌識別色。
+
+## 貢獻指南
+
+非常歡迎大家貢獻——包括新增指標、跨平台修正、以及透過 AI 一鍵新增其他語言翻譯。詳見 **[CONTRIBUTING.md](CONTRIBUTING.md)**。
 
 ## 鳴謝
 
