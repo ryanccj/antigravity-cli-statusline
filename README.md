@@ -128,7 +128,9 @@ Contributions are welcome — including new indicators, cross-platform fixes, an
 
 ## Acknowledgements
 
-Special thanks to [60ke/antigravity-statusline](https://github.com/60ke/antigravity-statusline) for the inspiration behind the quota monitoring feature. Their original project paved the way for statusline integrations. Since their implementation was written in Python, which could be challenging to execute consistently across Windows and macOS, this project was rewritten in JavaScript (Node.js) to ensure seamless cross-platform compatibility without relying on external Python dependencies.
+This project is a fork and major enhancement of **[AndyAWD/antigravity-cli-statusline](https://github.com/AndyAWD/antigravity-cli-statusline)**, which provided the excellent cross-platform Node.js foundation.
+
+Special thanks to **[60ke/antigravity-statusline](https://github.com/60ke/antigravity-statusline)** for the original inspiration behind the quota monitoring feature that paved the way for statusline integrations in Antigravity.
 
 ## License
 

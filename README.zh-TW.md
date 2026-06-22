@@ -128,7 +128,9 @@ agy plugin install https://github.com/ryanccj/antigravity-cli-statusline
 
 ## 鳴謝
 
-特別感謝 [60ke/antigravity-statusline](https://github.com/60ke/antigravity-statusline) 專案。本專案的額度監控靈感正是來自於此，由於該原專案主要是使用 Python 撰寫，在 Windows 和 macOS 跨平台執行上可能遇到環境設定的困難，因此我使用 JavaScript (Node.js) 進行改寫，以實現真正的跨平台免安裝依賴執行。
+本專案 Fork 並大幅強化自 **[AndyAWD/antigravity-cli-statusline](https://github.com/AndyAWD/antigravity-cli-statusline)**，感謝該專案奠定了優秀的跨平台 Node.js 核心基礎。
+
+同時也特別感謝 **[60ke/antigravity-statusline](https://github.com/60ke/antigravity-statusline)** 專案，為最初的額度監控功能與狀態列整合帶來了重要的靈感。
 
 ## 授權條款
 
