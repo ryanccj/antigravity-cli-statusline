@@ -1,6 +1,6 @@
 # Antigravity CLI 狀態列設定技能
 
-[![版本](https://img.shields.io/badge/版本-1.4.0-blue.svg)](skills/antigravity-cli-statusline.md)
+[![版本](https://img.shields.io/badge/版本-1.5.0-blue.svg)](skills/antigravity-cli-statusline.md)
 [![授權條款: MIT](https://img.shields.io/badge/授權條款-MIT-yellow.svg)](LICENSE)
 [![平台](https://img.shields.io/badge/平台-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
@@ -8,6 +8,12 @@
 
 一個多語系、跨平台的技能，用來客製化 Antigravity CLI 狀態列（Footer）——精準勾選想顯示的指標、自由排序，並內建智慧型換行。
 
+## 最新更新 (What's New)
+
+- **全新指標**：新增 `5h/1w quota` (模型額度)、`5h/1w reset time` (重置倒數) 以及 `AI credits` (共用 AI 點數)。
+- **全新風格**：新增 `colorful` 風格！設計靈感來自於 [Nanako0129/coralline](https://github.com/Nanako0129/coralline)，帶來海洋風的漸層高質感視覺體驗。
+
+![Colorful Style (Coralline-inspired)](docs/images/agy-cli-colorful.png)
 ## 實際畫面
 
 ### Windows
@@ -32,7 +38,7 @@
 ### 步驟 A：安裝外掛
 
 ```bash
-agy plugin install https://github.com/andyawd/antigravity-cli-statusline
+agy plugin install https://github.com/ryanccj/antigravity-cli-statusline
 ```
 
 > CLI 會把 bundle stage 至 `~/.gemini/antigravity-cli/plugins/antigravity-cli-statusline/`。
@@ -79,6 +85,7 @@ agy plugin install https://github.com/andyawd/antigravity-cli-statusline
 - **工作區是否有未提交變更（`vcs-dirty`）**：`dirty / clean`
 
 **系統與帳號**
+- **系統時間（`system-time`）**：目前當地時間
 - **CLI 行程所消耗的 RAM 記憶體量（`memory-usage`）**
 - **Antigravity CLI 版本號（`cli-version`）**
 - **目前對話 ID 前 8 碼（`conversation-id`）**：用於除錯

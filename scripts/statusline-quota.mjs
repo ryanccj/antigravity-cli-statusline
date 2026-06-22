@@ -9,14 +9,13 @@ import os from 'os';
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const GRAY = "\x1b[90m";
-const WHITE = "\x1b[38;2;255;255;255m";
+const WHITE = "";
 const BLUE = "\x1b[38;2;87;202;255m";
 const GREEN = "\x1b[38;2;92;219;109m";
 const YELLOW = "\x1b[38;2;255;212;39m";
 const RED = "\x1b[38;2;255;125;175m";
 
 function getColorByPercentage(pct) {
-  if (pct >= 75) return BLUE;
   if (pct >= 50) return GREEN;
   if (pct >= 25) return YELLOW;
   return RED;
@@ -287,18 +286,6 @@ function extractMetrics(meta, lang, fallbackModel, cache, cachedAccount, quotaIn
   const unknownStr = lang === 'zh-tw' ? '未知' : (lang === 'jp' ? '不明' : 'Unknown');
   const noneStr = lang === 'zh-tw' ? '無' : (lang === 'jp' ? 'なし' : 'N/A');
 
-  // Quota
-  const quotaPct = quotaInfo.remaining_percentage;
-  const quotaColor = getColorByPercentage(quotaPct);
-  const quotaVal = `${Math.round(quotaPct)}%`;
-  const countdownVal = quotaInfo.refreshes_in || noneStr;
-
-  // Context
-  const remainCtx = Math.max(0, 100 - contextInfo.usedPctNum);
-  const contextColor = getColorByPercentage(remainCtx);
-  const usedPct = `${contextInfo.usedPctNum.toFixed(1)}%`;
-  const tokenCount = `${contextColor}${formatTokens(contextInfo.totalInput)}${RESET} / ${formatTokens(contextInfo.contextSize)}`;
-
   // System & Environment
   const rssMem = getCliMemoryMB();
   const memUsage = `${rssMem}MB`;
@@ -310,6 +297,73 @@ function extractMetrics(meta, lang, fallbackModel, cache, cachedAccount, quotaIn
   const planTier = (cache && cache.planTier) ? cache.planTier : (meta?.account?.plan_tier || cachedAccount.planTier || unknownStr);
   const accountEmail = (cache && cache.email) ? cache.email : (meta?.account?.email || cachedAccount.email || unknownStr);
   const aiCredits = (cache && cache.aiCredits) ? cache.aiCredits : (meta?.account?.ai_credits || cachedAccount.aiCredits || noneStr);
+
+  // Quota (grouped: Gemini vs Anthropic/OpenAI, and showing 5hr / weekly quota)
+  const isGemini = fallbackModel.toLowerCase().includes('gemini');
+  let provider = isGemini ? 'Gemini' : 'Anthropic/OpenAI';
+
+  let quotaPct = 100;
+  let weeklyPct = undefined;
+  let quotaColor5h = '';
+  let quotaColor1w = '';
+  let countdownVal = noneStr;
+  let countdownVal5h = '';
+  let countdownVal1w = '';
+
+  if (meta && meta.quota) {
+    const key5h = isGemini ? 'gemini-5h' : '3p-5h';
+    const keyWeekly = isGemini ? 'gemini-weekly' : '3p-weekly';
+    if (meta.quota[key5h]) {
+      quotaPct = meta.quota[key5h].remaining_fraction * 100;
+      quotaColor5h = getColorByPercentage(quotaPct);
+      const resetSec = meta.quota[key5h].reset_in_seconds;
+      if (resetSec !== undefined) {
+        const h = Math.floor(resetSec / 3600);
+        const m = Math.floor((resetSec % 3600) / 60);
+        countdownVal5h = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      }
+    }
+    if (meta.quota[keyWeekly]) {
+      weeklyPct = meta.quota[keyWeekly].remaining_fraction * 100;
+      quotaColor1w = getColorByPercentage(weeklyPct);
+      const wResetSec = meta.quota[keyWeekly].reset_in_seconds;
+      if (wResetSec !== undefined) {
+        const d = Math.floor(wResetSec / 86400);
+        const h = Math.floor((wResetSec % 86400) / 3600);
+        countdownVal1w = d > 0 ? `${d}d ${h}h` : `${h}h`;
+      }
+    }
+    
+    if (countdownVal5h && countdownVal1w) {
+      countdownVal = `(5h) ${countdownVal5h} / (1w) ${countdownVal1w}`;
+    } else if (countdownVal5h) {
+      countdownVal = `(5h) ${countdownVal5h}`;
+    } else if (countdownVal1w) {
+      countdownVal = `(1w) ${countdownVal1w}`;
+    }
+  } else {
+    quotaPct = quotaInfo.remaining_percentage !== undefined ? quotaInfo.remaining_percentage : 100;
+    weeklyPct = quotaInfo.weekly_remaining_percentage;
+    quotaColor5h = getColorByPercentage(quotaPct);
+    if(weeklyPct !== undefined) quotaColor1w = getColorByPercentage(weeklyPct);
+    countdownVal = quotaInfo.refreshes_in || noneStr;
+  }
+
+  const quotaColor = quotaColor5h;
+  let quotaLabel = lang === 'zh-tw' ? `${provider} 額度` : (lang === 'jp' ? `${provider} 枠` : `${provider} Quota`);
+  const weeklyStr = weeklyPct !== undefined ? ` / ${quotaColor1w}(1w) ${Math.round(weeklyPct)}%${RESET}` : '';
+  let quotaVal = `${quotaColor5h}(5h) ${Math.round(quotaPct)}%${RESET}${weeklyStr}`;
+
+  // Context
+  const remainCtx = Math.max(0, 100 - contextInfo.usedPctNum);
+  const contextColor = getColorByPercentage(remainCtx);
+  const usedPct = `${contextInfo.usedPctNum.toFixed(1)}%`;
+  const tokenCount = `${contextColor}${formatTokens(contextInfo.totalInput)}${RESET} / ${BLUE}${formatTokens(contextInfo.contextSize)}${RESET}`;
+
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const systemTimeVal = `${hours}:${minutes}`;
 
   // Agent State
   const agentState = meta?.agent_state || 'idle';
@@ -356,26 +410,26 @@ function extractMetrics(meta, lang, fallbackModel, cache, cachedAccount, quotaIn
   const conversationIdShort = rawConvId ? rawConvId.replace(/-/g, '').slice(0, 8) : unknownStr;
 
   return {
-    fallbackModel, quotaColor, quotaVal, contextColor, usedPct, memUsage, tokenCount,
+    fallbackModel, quotaColor, quotaVal, quotaLabel, contextColor, usedPct, memUsage, tokenCount,
     countdownVal, gitBranch, projectName, projectFullPath, planTier, accountEmail, aiCredits,
     agentState, toolConfirmPending, pendingInputCount, backgroundTasksCount, subagentsCount,
     artifactsCount, vcsDirtyFlag, vcsDirtyGlyph, vcsDirtyLabel, vcsType, sandboxEnabled,
-    sandboxAllowNet, sandboxStatusVal, cliVersion, conversationIdShort, agentProfileName
+    sandboxAllowNet, sandboxStatusVal, cliVersion, conversationIdShort, agentProfileName, systemTimeVal
   };
 }
 
 function buildI18nDict(lang, m) {
   const dicts = {
     'zh-tw': {
-      'model-name': `${WHITE}模型:${RESET} ${getModelColor(m.fallbackModel)}${BOLD}${m.fallbackModel}${RESET}`,
-      'quota': `${WHITE}API 可用額度:${RESET} ${m.quotaColor}${BOLD}${m.quotaVal}${RESET}`,
+      'model-name': `模型:\x1b[0m ${getModelColor(m.fallbackModel)}\x1b[1m${BOLD}${m.fallbackModel}${RESET}`,
+      'quota': `${m.quotaLabel}:\x1b[0m ${m.quotaColor}\x1b[1m${BOLD}${m.quotaVal}${RESET}`,
       'context-used': `${WHITE}Context:${RESET} ${m.contextColor}${BOLD}${m.usedPct}${RESET}`,
       'memory-usage': `${WHITE}記憶體:${RESET} ${BLUE}${BOLD}${m.memUsage}${RESET}`,
       'token-count': `${WHITE}Token:${RESET} ${m.tokenCount}`,
       'quota-reset-countdown': `${WHITE}API 重置倒數:${RESET} ${BLUE}${BOLD}${m.countdownVal}${RESET}`,
-      'git-branch': `${WHITE}Git 分支: ${BOLD}${m.gitBranch}${RESET}`,
+      'git-branch': `Git 分支: \x1b[1m${BOLD}${m.gitBranch}${RESET}`,
       'project-path': `${WHITE}專案: ${BOLD}${m.projectName}${RESET}`,
-      'project-full-path': `${WHITE}專案路徑: ${BOLD}${m.projectFullPath}${RESET}`,
+      'project-full-path': `專案路徑: \x1b[1m${BOLD}${m.projectFullPath}${RESET}`,
       'plan-tier': `${WHITE}帳號等級: ${BOLD}${m.planTier}${RESET}`,
       'account-email': `${WHITE}帳號: ${BOLD}${m.accountEmail}${RESET}`,
       'ai-credits': `${WHITE}AI 點數:${RESET} ${BLUE}${BOLD}${m.aiCredits}${RESET}`,
@@ -388,20 +442,21 @@ function buildI18nDict(lang, m) {
       'vcs-dirty': `${WHITE}工作區:${RESET} ${getVcsDirtyColor(m.vcsDirtyFlag)}${BOLD}${m.vcsDirtyGlyph} ${m.vcsDirtyLabel}${RESET}`,
       'vcs-type': `${WHITE}版控類型: ${BOLD}${m.vcsType}${RESET}`,
       'sandbox-status': `${WHITE}沙盒:${RESET} ${getSandboxColor(m.sandboxEnabled, m.sandboxAllowNet)}${BOLD}${m.sandboxStatusVal}${RESET}`,
-      'cli-version': `${WHITE}CLI 版本: ${BOLD}${m.cliVersion}${RESET}`,
-      'conversation-id': `${WHITE}對話 ID: ${BOLD}${m.conversationIdShort}${RESET}`,
-      'agent-profile': `${WHITE}使用中代理:${RESET} ${BLUE}${BOLD}${m.agentProfileName}${RESET}`
+      'cli-version': `CLI 版本: ${BOLD}${m.cliVersion}${RESET}`,
+      'conversation-id': `對話 ID: ${BOLD}${m.conversationIdShort}${RESET}`,
+      'agent-profile': `使用中代理: ${BLUE}${BOLD}${m.agentProfileName}${RESET}`,
+      'system-time': `時間: ${BOLD}${m.systemTimeVal}${RESET}`
     },
     'us': {
-      'model-name': `${WHITE}Model:${RESET} ${getModelColor(m.fallbackModel)}${BOLD}${m.fallbackModel}${RESET}`,
-      'quota': `${WHITE}API Available:${RESET} ${m.quotaColor}${BOLD}${m.quotaVal}${RESET}`,
+      'model-name': `Model:\x1b[0m ${getModelColor(m.fallbackModel)}\x1b[1m${BOLD}${m.fallbackModel}${RESET}`,
+      'quota': `${m.quotaLabel}:\x1b[0m ${m.quotaColor}\x1b[1m${BOLD}${m.quotaVal}${RESET}`,
       'context-used': `${WHITE}Context:${RESET} ${m.contextColor}${BOLD}${m.usedPct}${RESET}`,
       'memory-usage': `${WHITE}RAM:${RESET} ${BLUE}${BOLD}${m.memUsage}${RESET}`,
       'token-count': `${WHITE}Tokens:${RESET} ${m.tokenCount}`,
       'quota-reset-countdown': `${WHITE}API Reset in:${RESET} ${BLUE}${BOLD}${m.countdownVal}${RESET}`,
-      'git-branch': `${WHITE}Git: ${BOLD}${m.gitBranch}${RESET}`,
+      'git-branch': `Git: \x1b[1m${BOLD}${m.gitBranch}${RESET}`,
       'project-path': `${WHITE}Project: ${BOLD}${m.projectName}${RESET}`,
-      'project-full-path': `${WHITE}Project Path: ${BOLD}${m.projectFullPath}${RESET}`,
+      'project-full-path': `Project Path: \x1b[1m${BOLD}${m.projectFullPath}${RESET}`,
       'plan-tier': `${WHITE}Plan: ${BOLD}${m.planTier}${RESET}`,
       'account-email': `${WHITE}Account: ${BOLD}${m.accountEmail}${RESET}`,
       'ai-credits': `${WHITE}AI Credits:${RESET} ${BLUE}${BOLD}${m.aiCredits}${RESET}`,
@@ -414,20 +469,21 @@ function buildI18nDict(lang, m) {
       'vcs-dirty': `${WHITE}Status:${RESET} ${getVcsDirtyColor(m.vcsDirtyFlag)}${BOLD}${m.vcsDirtyGlyph} ${m.vcsDirtyLabel}${RESET}`,
       'vcs-type': `${WHITE}VCS: ${BOLD}${m.vcsType}${RESET}`,
       'sandbox-status': `${WHITE}Sandbox:${RESET} ${getSandboxColor(m.sandboxEnabled, m.sandboxAllowNet)}${BOLD}${m.sandboxStatusVal}${RESET}`,
-      'cli-version': `${WHITE}CLI: ${BOLD}${m.cliVersion}${RESET}`,
-      'conversation-id': `${WHITE}Conv: ${BOLD}${m.conversationIdShort}${RESET}`,
-      'agent-profile': `${WHITE}Profile:${RESET} ${BLUE}${BOLD}${m.agentProfileName}${RESET}`
+      'cli-version': `CLI: ${BOLD}${m.cliVersion}${RESET}`,
+      'conversation-id': `Conv: ${BOLD}${m.conversationIdShort}${RESET}`,
+      'agent-profile': `Profile: ${BLUE}${BOLD}${m.agentProfileName}${RESET}`,
+      'system-time': `Time: ${BOLD}${m.systemTimeVal}${RESET}`
     },
     'jp': {
-      'model-name': `${WHITE}モデル:${RESET} ${getModelColor(m.fallbackModel)}${BOLD}${m.fallbackModel}${RESET}`,
-      'quota': `${WHITE}API 利用可能枠:${RESET} ${m.quotaColor}${BOLD}${m.quotaVal}${RESET}`,
+      'model-name': `モデル:\x1b[0m ${getModelColor(m.fallbackModel)}\x1b[1m${BOLD}${m.fallbackModel}${RESET}`,
+      'quota': `${m.quotaLabel}:\x1b[0m ${m.quotaColor}\x1b[1m${BOLD}${m.quotaVal}${RESET}`,
       'context-used': `${WHITE}コンテキスト:${RESET} ${m.contextColor}${BOLD}${m.usedPct}${RESET}`,
       'memory-usage': `${WHITE}メモリ:${RESET} ${BLUE}${BOLD}${m.memUsage}${RESET}`,
       'token-count': `${WHITE}トークン数:${RESET} ${m.tokenCount}`,
       'quota-reset-countdown': `${WHITE}API リセットまで:${RESET} ${BLUE}${BOLD}${m.countdownVal}${RESET}`,
-      'git-branch': `${WHITE}Gitブランチ: ${BOLD}${m.gitBranch}${RESET}`,
+      'git-branch': `Gitブランチ: \x1b[1m${BOLD}${m.gitBranch}${RESET}`,
       'project-path': `${WHITE}プロジェクト: ${BOLD}${m.projectName}${RESET}`,
-      'project-full-path': `${WHITE}プロジェクトパス: ${BOLD}${m.projectFullPath}${RESET}`,
+      'project-full-path': `プロジェクトパス: \x1b[1m${BOLD}${m.projectFullPath}${RESET}`,
       'plan-tier': `${WHITE}プラン: ${BOLD}${m.planTier}${RESET}`,
       'account-email': `${WHITE}アカウント: ${BOLD}${m.accountEmail}${RESET}`,
       'ai-credits': `${WHITE}AI クレジット:${RESET} ${BLUE}${BOLD}${m.aiCredits}${RESET}`,
@@ -440,46 +496,320 @@ function buildI18nDict(lang, m) {
       'vcs-dirty': `${WHITE}作業領域:${RESET} ${getVcsDirtyColor(m.vcsDirtyFlag)}${BOLD}${m.vcsDirtyGlyph} ${m.vcsDirtyLabel}${RESET}`,
       'vcs-type': `${WHITE}VCS種別: ${BOLD}${m.vcsType}${RESET}`,
       'sandbox-status': `${WHITE}サンドボックス:${RESET} ${getSandboxColor(m.sandboxEnabled, m.sandboxAllowNet)}${BOLD}${m.sandboxStatusVal}${RESET}`,
-      'cli-version': `${WHITE}CLIバージョン: ${BOLD}${m.cliVersion}${RESET}`,
-      'conversation-id': `${WHITE}会話 ID: ${BOLD}${m.conversationIdShort}${RESET}`,
-      'agent-profile': `${WHITE}エージェントプロファイル:${RESET} ${BLUE}${BOLD}${m.agentProfileName}${RESET}`
+      'cli-version': `CLIバージョン: ${BOLD}${m.cliVersion}${RESET}`,
+      'conversation-id': `会話 ID: ${BOLD}${m.conversationIdShort}${RESET}`,
+      'agent-profile': `エージェントプロファイル: ${BLUE}${BOLD}${m.agentProfileName}${RESET}`,
+      'system-time': `時間: ${BOLD}${m.systemTimeVal}${RESET}`
     }
   };
   return dicts[lang] || dicts['zh-tw'];
 }
 
-function renderStatusLine(footerItems, activeDict, termWidth) {
+// ==========================================
+// Theme and Styles Configuration (Nord)
+// ==========================================
+const NORD = {
+  nord0: '46;52;64',     // #2E3440 (Polar Night)
+  nord1: '59;66;82',     // #3B4252
+  nord2: '67;76;94',     // #434C5E
+  nord3: '76;86;106',    // #4C566A
+  nord4: '216;222;233',  // #D8DEE9 (Snow Storm)
+  nord5: '229;233;240',  // #E5E9F0
+  nord6: '236;239;244',  // #ECEFF4
+  nord7: '143;188;187',  // #8FBCBB (Frost - teal)
+  nord8: '136;192;208',  // #88C0D0 (Frost - ice blue)
+  nord9: '129;161;193',  // #81A1C1 (Frost - sky blue)
+  nord10: '94;129;172',   // #5E81AC (Frost - royal blue)
+  nord11: '191;97;106',  // #BF616A (Aurora - red)
+  nord12: '208;135;112',  // #D08770 (Aurora - orange)
+  nord13: '235;203;139',  // #EBCB8B (Aurora - yellow)
+  nord14: '163;190;140',  // #A3BE8C (Aurora - green)
+  nord15: '180;142;173'   // #B48EAD (Aurora - purple)
+};
+
+function getSegmentStyle(item, m) {
+  let bg = NORD.nord1;
+  let fg = NORD.nord6;
+  let icon = '';
+
+  switch (item) {
+    case 'model-name':
+      bg = NORD.nord13; // Yellow
+      fg = NORD.nord0; // Dark text
+      icon = '❖ ';
+      break;
+    case 'agent-profile':
+      bg = NORD.nord7;  // Teal (nord7)
+      fg = NORD.nord0;
+      icon = ' ';
+      break;
+    case 'agent-state':
+      const s = (m.agentState || '').toLowerCase();
+      if (s.includes('error') || s.includes('fail')) {
+        bg = NORD.nord11; // Red
+        fg = NORD.nord6;
+      } else if (s.includes('busy') || s.includes('run') || s.includes('think')) {
+        bg = NORD.nord13; // Yellow
+        fg = NORD.nord0;
+      } else {
+        bg = NORD.nord14; // Green
+        fg = NORD.nord0;
+      }
+      icon = ' ';
+      break;
+    case 'sandbox-status':
+      if (!m.sandboxEnabled) {
+        bg = NORD.nord11;
+        fg = NORD.nord6;
+      } else if (m.sandboxAllowNet) {
+        bg = NORD.nord13;
+        fg = NORD.nord0;
+      } else {
+        bg = NORD.nord10; // Blue (nord10)
+        fg = NORD.nord6;
+      }
+      icon = ' ';
+      break;
+    case 'context-used':
+      bg = NORD.nord10; // Deep blue
+      fg = NORD.nord6; // Light text
+      icon = '≡ ';
+      break;
+    case 'token-count':
+      bg = NORD.nord3; // Medium gray (nord3)
+      fg = NORD.nord4; // Light text
+      icon = ' ';
+      break;
+    case 'artifacts':
+      bg = NORD.nord2; // Dark gray (nord2)
+      fg = NORD.nord6;
+      icon = ' ';
+      break;
+    case 'account-email':
+      bg = NORD.nord7; // Teal
+      fg = NORD.nord0; // Dark text
+      icon = ' ';
+      break;
+    case 'plan-tier':
+      bg = NORD.nord15; // Purple
+      fg = NORD.nord4;
+      icon = ' ';
+      break;
+    case 'system-time':
+      bg = NORD.nord15; // Purple
+      fg = NORD.nord0; // Dark text
+      icon = ' ';
+      break;
+    case 'quota':
+      bg = NORD.nord3; // Medium gray
+      fg = NORD.nord4; // Light text
+      icon = ' ';
+      break;
+    case 'quota-reset-countdown':
+      bg = NORD.nord2; // Dark gray
+      fg = NORD.nord4; // Light text
+      icon = ' ';
+      break;
+    case 'ai-credits':
+      bg = NORD.nord1; // Dark polar night
+      fg = NORD.nord4; // Light text
+      icon = ' ';
+      break;
+    case 'tool-confirmation':
+      if (m.toolConfirmPending) {
+        bg = NORD.nord13;
+        fg = NORD.nord0;
+      } else {
+        bg = NORD.nord14;
+        fg = NORD.nord0;
+      }
+      icon = ' ';
+      break;
+    case 'pending-input':
+      if (m.pendingInputCount > 0) {
+        bg = NORD.nord12;
+        fg = NORD.nord0;
+      } else {
+        bg = NORD.nord1; // Dark polar night (nord1)
+        fg = NORD.nord4;
+      }
+      icon = ' ';
+      break;
+    case 'background-tasks':
+      if (m.backgroundTasksCount > 0) {
+        bg = NORD.nord12;
+        fg = NORD.nord0;
+      } else {
+        bg = NORD.nord2; // Medium dark (nord2) - alternate with pending-input
+        fg = NORD.nord4;
+      }
+      icon = ' ';
+      break;
+    case 'subagents':
+      if (m.subagentsCount > 0) {
+        bg = NORD.nord12;
+        fg = NORD.nord0;
+      } else {
+        bg = NORD.nord3; // Medium gray (nord3) - alternate
+        fg = NORD.nord4;
+      }
+      icon = ' ';
+      break;
+    case 'project-path':
+      bg = NORD.nord8; // Ice Blue
+      fg = NORD.nord0; // Dark text
+      icon = ' ';
+      break;
+    case 'project-full-path':
+      bg = NORD.nord8; // Ice Blue (nord8)
+      fg = NORD.nord0;
+      icon = ' ';
+      break;
+    case 'vcs-type':
+      bg = NORD.nord2; // Medium dark (nord2)
+      fg = NORD.nord4;
+      icon = ' ';
+      break;
+    case 'git-branch':
+      bg = NORD.nord7; // Teal
+      fg = NORD.nord0; // Dark text
+      icon = ' ';
+      break;
+    case 'vcs-dirty':
+      if (m.vcsDirtyFlag) {
+        bg = NORD.nord11;
+        fg = NORD.nord6;
+      } else {
+        bg = NORD.nord14;
+        fg = NORD.nord0;
+      }
+      icon = ' ';
+      break;
+    case 'memory-usage':
+      bg = NORD.nord10; // Royal Blue (nord10) - highlight RAM metrics
+      fg = NORD.nord6;
+      icon = ' ';
+      break;
+    case 'cli-version':
+      bg = NORD.nord0; // Deep polar night (nord0) - subtle details
+      fg = NORD.nord4;
+      icon = ' ';
+      break;
+    case 'conversation-id':
+      bg = NORD.nord0; // Deep polar night (nord0) - subtle details
+      fg = NORD.nord4;
+      icon = ' ';
+      break;
+  }
+
+  return {
+    bgCode: `\x1b[48;2;${bg}m`,
+    fgCode: `\x1b[38;2;${fg}m`,
+    sepCode: `\x1b[38;2;${bg}m`,
+    icon
+  };
+}
+
+function renderStatusLine(footerItems, activeDict, metrics, styleType, termWidth) {
   const lines = [];
-  let currentLine = '';
-  
+  let currentLine = [];
+  let currentLineWidth = 0;
+
   for (let i = 0; i < footerItems.length; i++) {
     const item = footerItems[i];
     if (item === 'n' || item === 'newline') {
-      if (currentLine !== '') {
+      if (currentLine.length > 0) {
         lines.push(currentLine);
-        currentLine = '';
+        currentLine = [];
+        currentLineWidth = 0;
       } else {
-        lines.push(' ');
+        lines.push([{ type: 'newline' }]);
       }
       continue;
     }
 
-    const text = activeDict[item];
+    const rawText = activeDict[item] || '';
+    const text = stripAnsi(rawText);
     if (!text) continue;
 
-    const toAdd = currentLine === '' ? text : ` ${GRAY}│${RESET} ${text}`;
-    const toAddPlain = stripAnsi(toAdd);
-    const currentPlain = stripAnsi(currentLine);
-    
-    if (currentLine !== '' && getDisplayWidth(currentPlain) + getDisplayWidth(toAddPlain) > termWidth) {
+    const style = getSegmentStyle(item, metrics);
+
+    // Calculate display width
+    let segmentWidth = 0;
+    if (styleType === 'classic' || styleType === 'flat') {
+      // Classic: " text " plus separator " │ "
+      segmentWidth = getDisplayWidth(text) + (currentLine.length > 0 ? 3 : 0);
+    } else if (styleType === 'powerline') {
+      // Powerline: " icon text " plus ""
+      const content = ` ${style.icon}${text} `;
+      segmentWidth = getDisplayWidth(content) + 1; // +1 for 
+    } else if (styleType === 'capsule' || styleType === 'colorful') {
+      // Capsule/Colorful: flat ends,  in between
+      const content = ` ${style.icon}${text} `;
+      segmentWidth = getDisplayWidth(content) + 1; // Content + 1 (for )
+    }
+
+    if (currentLine.length > 0 && currentLineWidth + segmentWidth > termWidth) {
       lines.push(currentLine);
-      currentLine = text;
+      currentLine = [{ item, text, rawText, style, width: segmentWidth }];
+      currentLineWidth = segmentWidth;
     } else {
-      currentLine += (currentLine === '' ? text : ` ${GRAY}│${RESET} ${text}`);
+      currentLine.push({ item, text, rawText, style, width: segmentWidth });
+      currentLineWidth += segmentWidth;
     }
   }
-  if (currentLine !== '') lines.push(currentLine);
-  console.log(lines.join('\n'));
+
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
+  const outputLines = lines.map(lineItems => {
+    if (lineItems.length === 1 && lineItems[0].type === 'newline') {
+      return '';
+    }
+
+    let lineStr = '';
+
+    if (styleType === 'classic' || styleType === 'flat') {
+      const segments = lineItems.map(seg => activeDict[seg.item]);
+      return segments.join(` ${GRAY}│${RESET} `);
+    }
+
+    if (styleType === 'powerline') {
+      for (let j = 0; j < lineItems.length; j++) {
+        const seg = lineItems[j];
+        const nextSeg = j + 1 < lineItems.length ? lineItems[j + 1] : null;
+        
+        const segmentContent = ` ${seg.style.icon}${seg.text} `;
+        const nextBgCode = nextSeg ? nextSeg.style.bgCode : '\x1b[49m'; // Reset background for end of line
+        
+        const sep = `${nextBgCode}${seg.style.sepCode}`;
+        lineStr += `${seg.style.bgCode}${seg.style.fgCode}${segmentContent}${sep}`;
+      }
+      return lineStr + RESET;
+    }
+
+    if (styleType === 'colorful') {
+      for (let j = 0; j < lineItems.length; j++) {
+        const seg = lineItems[j];
+        const nextSeg = j + 1 < lineItems.length ? lineItems[j + 1] : null;
+        const segmentContent = ` ${seg.style.icon}${seg.text} `;
+        
+        // Render content block
+        lineStr += `${seg.style.bgCode}${seg.style.fgCode}${segmentContent}`;
+        
+        // Connect segments with  inside, flat edges at outer sides
+        if (nextSeg) {
+          lineStr += `${nextSeg.style.bgCode}${seg.style.sepCode}`;
+        }
+      }
+      return lineStr + RESET;
+    }
+
+    return '';
+  });
+
+  console.log(outputLines.join('\n'));
 }
 
 // ==========================================
@@ -527,7 +857,8 @@ async function main() {
     // 格式化指標並繪製
     const metrics = extractMetrics(meta, lang, fallbackModel, cache, cachedAccount, quotaInfo, contextInfo);
     const activeDict = buildI18nDict(lang, metrics);
-    renderStatusLine(footerItems, activeDict, termWidth);
+    const styleType = settings?.ui?.footer?.style || 'classic';
+    renderStatusLine(footerItems, activeDict, metrics, styleType, termWidth);
 
   } catch (err) {
     try {

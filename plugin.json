@@ -1,8 +1,8 @@
 {
   "name": "antigravity-cli-statusline",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Customize the Antigravity CLI statusline (footer) with quota, token, context, model, git branch and more across macOS / Linux / Windows.",
-  "author": "andyawd",
+  "author": "ryanccj",
   "license": "MIT",
-  "homepage": "https://github.com/andyawd/antigravity-cli-statusline"
+  "homepage": "https://github.com/ryanccj/antigravity-cli-statusline"
 }

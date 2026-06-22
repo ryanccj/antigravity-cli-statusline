@@ -1,6 +1,6 @@
 # Antigravity CLI Statusline Skill
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](skills/antigravity-cli-statusline.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](skills/antigravity-cli-statusline.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 
@@ -8,6 +8,12 @@
 
 A multilingual, cross-platform skill that customizes the Antigravity CLI statusline (footer) — pick exactly which indicators to show, in any order you like, with smart line wrapping out of the box.
 
+## What's New
+
+- **New Indicators**: Added `5h/1w quota`, `5h/1w reset time`, and `AI credits`.
+- **New Style**: Introduced the `colorful` style! Inspired by [Nanako0129/coralline](https://github.com/Nanako0129/coralline), bringing a highly elegant, ocean-themed gradient visual experience.
+
+![Colorful Style (Coralline-inspired)](docs/images/agy-cli-colorful.png)
 ## Screenshots
 
 ### Windows
@@ -32,7 +38,7 @@ A multilingual, cross-platform skill that customizes the Antigravity CLI statusl
 ### Step A — Install the plugin
 
 ```bash
-agy plugin install https://github.com/andyawd/antigravity-cli-statusline
+agy plugin install https://github.com/ryanccj/antigravity-cli-statusline
 ```
 
 > The CLI stages the bundle at `~/.gemini/antigravity-cli/plugins/antigravity-cli-statusline/`.
@@ -79,6 +85,7 @@ The skill walks you through language selection, indicator picking, and sorting, 
 - **Working tree status (`vcs-dirty`)** — `dirty / clean`
 
 **System & Account**
+- **System time (`system-time`)** — current local time
 - **CLI RAM usage (`memory-usage`)** — RSS memory consumed by the `agy` process
 - **Antigravity CLI version (`cli-version`)**
 - **Conversation ID (`conversation-id`)** — first 8 chars, for debugging

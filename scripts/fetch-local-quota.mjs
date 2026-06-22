@@ -174,11 +174,15 @@ async function fetchLiveQuotaCache() {
         if (userStatus.email) accountEmail = userStatus.email;
         if (userStatus.userTier) {
           if (userStatus.userTier.name) planTierName = userStatus.userTier.name;
-          if (userStatus.userTier.availableCredits && userStatus.userTier.availableCredits.length > 0) {
+        }
+        if (userStatus.planStatus) {
+          planStatusData = userStatus.planStatus;
+          if (userStatus.planStatus.availablePromptCredits !== undefined) {
+            aiCreditsAmount = String(userStatus.planStatus.availablePromptCredits);
+          } else if (userStatus.userTier && userStatus.userTier.availableCredits && userStatus.userTier.availableCredits.length > 0) {
             aiCreditsAmount = userStatus.userTier.availableCredits[0].creditAmount || '';
           }
         }
-        if (userStatus.planStatus) planStatusData = userStatus.planStatus;
         
         const cascade = userStatus.cascadeModelConfigData || {};
         for (const model of cascade.clientModelConfigs || []) {
